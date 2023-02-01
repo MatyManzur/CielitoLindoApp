@@ -12,7 +12,7 @@ class ReservaRepositoryImplementation(private val reservaDao: ReservaDao) : Rese
         return reservaDao.getAllReservas()
     }
 
-    override suspend fun getReservasInRange(dateFrom: LocalDate, dateTo: LocalDate): Flow<List<Reserva>> {
+    override fun getReservasInRange(dateFrom: LocalDate, dateTo: LocalDate): Flow<List<Reserva>> {
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         return reservaDao.getReservasInRange(dateFrom.format(formatter), dateTo.format(formatter))
     }
@@ -21,7 +21,7 @@ class ReservaRepositoryImplementation(private val reservaDao: ReservaDao) : Rese
         return reservaDao.getReservaById(id)
     }
 
-    override suspend fun getReservasFromCliente(clienteId: String): Flow<List<Reserva>> {
+    override fun getReservasFromCliente(clienteId: String): Flow<List<Reserva>> {
         return reservaDao.getReservasFromCliente(clienteId)
     }
 

@@ -1,4 +1,9 @@
 package com.example.cielitolindo.domain.use_case.reservas
 
-class GetAllReservas {
+import com.example.cielitolindo.domain.model.Reserva
+import com.example.cielitolindo.domain.repository.ReservaRepository
+import kotlinx.coroutines.flow.Flow
+
+class GetAllReservas(private val reservaRepository: ReservaRepository) {
+    operator fun invoke(): Flow<List<Reserva>> = reservaRepository.getAllReservas()
 }
