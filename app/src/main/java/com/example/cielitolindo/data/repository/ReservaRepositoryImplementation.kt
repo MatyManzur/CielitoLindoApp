@@ -1,6 +1,7 @@
 package com.example.cielitolindo.data.repository
 
 import com.example.cielitolindo.data.data_source.ReservaDao
+import com.example.cielitolindo.domain.model.Casa
 import com.example.cielitolindo.domain.model.Reserva
 import com.example.cielitolindo.domain.repository.ReservaRepository
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,15 @@ class ReservaRepositoryImplementation(private val reservaDao: ReservaDao) : Rese
 
     override fun getReservasFromCliente(clienteId: String): Flow<List<Reserva>> {
         return reservaDao.getReservasFromCliente(clienteId)
+    }
+
+    override suspend fun countReservasOfCasaInRange(
+        casa: Casa,
+        dateFrom: LocalDate,
+        dateTo: LocalDate
+    ): Int {
+        val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        return reservaDao.countReservasOfCasaInRange(casa, dateFrom.format(formatter), dateTo.format(formatter))
     }
 
     override suspend fun insertReserva(reserva: Reserva) {

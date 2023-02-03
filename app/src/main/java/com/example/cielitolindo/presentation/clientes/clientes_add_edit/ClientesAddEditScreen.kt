@@ -48,7 +48,8 @@ fun ClientesAddEditScreen(
                         if (state.loadingInfo.loadingState == LoadingState.READY) {
                             Icon(
                                 imageVector = Icons.Filled.Save,
-                                contentDescription = "Guardar Cliente"
+                                contentDescription = "Guardar Cliente",
+                                tint = MaterialTheme.colors.onSecondary
                             )
                         } else {
                             CircularProgressIndicator(
@@ -62,7 +63,7 @@ fun ClientesAddEditScreen(
                 topBar = {
                     TopAppBar(
                         title = {
-                            Text(text = state.screenTitle)
+                            Text(text = state.screenTitle, color = MaterialTheme.colors.onPrimary)
                         },
                         navigationIcon = {
                             IconButton(
@@ -72,7 +73,8 @@ fun ClientesAddEditScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = "Descartar Cambios"
+                                    contentDescription = "Descartar Cambios",
+                                    tint = MaterialTheme.colors.onPrimary
                                 )
                             }
                         },

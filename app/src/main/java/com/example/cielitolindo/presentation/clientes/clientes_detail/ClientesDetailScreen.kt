@@ -40,24 +40,26 @@ fun ClientesDetailScreen(
                         onClick = {
                             viewModel.onEvent(ClientesDetailEvent.OnEdit)
                         },
-                        backgroundColor = MaterialTheme.colors.primary
+                        backgroundColor = MaterialTheme.colors.secondary
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Edit,
-                            contentDescription = "Editar Cliente"
+                            contentDescription = "Editar Cliente",
+                            tint = MaterialTheme.colors.onSecondary
                         )
                     }
                 },
                 topBar = {
                     TopAppBar(
                         title = {
-                            Text(text = "Detalle de Cliente")
+                            Text(text = "Detalle de Cliente", color = MaterialTheme.colors.onPrimary)
                         },
                         navigationIcon = {
                             IconButton(onClick = { onNavigateUp() }) {
                                 Icon(
                                     imageVector = Icons.Filled.ArrowBack,
-                                    contentDescription = "Atras"
+                                    contentDescription = "Atrás",
+                                    tint = MaterialTheme.colors.onPrimary
                                 )
                             }
                         },
@@ -65,7 +67,8 @@ fun ClientesDetailScreen(
                             IconButton(onClick = { viewModel.onEvent(ClientesDetailEvent.OnShowDeleteConfirmationDialog) }) {
                                 Icon(
                                     imageVector = Icons.Filled.Delete,
-                                    contentDescription = "Eliminar Cliente"
+                                    contentDescription = "Eliminar Cliente",
+                                    tint = MaterialTheme.colors.onPrimary
                                 )
                             }
                         },

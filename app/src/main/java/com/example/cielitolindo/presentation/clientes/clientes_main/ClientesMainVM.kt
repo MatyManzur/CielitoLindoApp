@@ -22,8 +22,6 @@ class ClientesMainVM @Inject constructor(
     private val _state = mutableStateOf(ClientesState())
     val state: State<ClientesState> = _state
 
-    private var recentlyDeletedCliente: Cliente? = null
-
     private var getClientesJob: Job? = null
 
     init {

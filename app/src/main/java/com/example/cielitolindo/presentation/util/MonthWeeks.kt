@@ -10,14 +10,14 @@ class MonthWeeks {
             val weekDayOfFirstDay = firstDay.dayOfWeek.value % 7
             var currentDay = firstDay.minusDays(weekDayOfFirstDay.toLong())
             val ans = mutableListOf<List<LocalDate>>()
-            for (i in 1..6) {
+            do {
                 val week = mutableListOf<LocalDate>()
                 for (j in 1..7) {
                     week.add(currentDay)
                     currentDay = currentDay.plusDays(1)
                 }
                 ans.add(week)
-            }
+            } while(currentDay.month == month)
             return ans
         }
     }

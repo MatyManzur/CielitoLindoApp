@@ -56,7 +56,7 @@ fun ClientesMainScreen(
                         onClick = { onNavigateToCreateCliente() },
                         backgroundColor = MaterialTheme.colors.secondary
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = "Add")
+                        Icon(Icons.Filled.Add, contentDescription = "Add", tint = MaterialTheme.colors.onSecondary)
                     }
                 },
                 topBar = {

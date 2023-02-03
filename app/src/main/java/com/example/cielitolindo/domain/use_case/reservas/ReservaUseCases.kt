@@ -7,5 +7,6 @@ class ReservaUseCases(
     val getAllReservas: GetAllReservas,
     val getReserva: GetReserva,
     val getReservasFromCliente: GetReservasFromCliente,
-    val getReservasInRange: GetReservasInRange
+    val getReservasInRange: GetReservasInRange,
+    val countReservasOfCasaInRange: CountReservasOfCasaInRange
 )

@@ -2,7 +2,9 @@ package com.example.cielitolindo.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
+val LightBlue700 = Color(0xFF0288D1)
+val LightBlue700Light = Color(0xFF5eb8ff)
+val Orange700 = Color(0xFFF57C00)
+val Orange800Light = Color(0xFFff9d3f)
+val LightGreen600Dark = Color(0xFF4B830D)
+val LightGreen600 = Color(0xFF7CB342)

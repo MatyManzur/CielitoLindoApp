@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import com.example.cielitolindo.presentation.clientes.clientes_add_edit.ClientesAddEditScreen
 import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDetailScreen
 import com.example.cielitolindo.presentation.clientes.clientes_main.ClientesMainScreen
+import com.example.cielitolindo.presentation.reservas.reservas_main.ReservasMainScreen
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
 import com.example.cielitolindo.presentation.util.Screen
 import com.example.cielitolindo.ui.theme.CielitoLindoTheme
@@ -45,7 +46,7 @@ class MainActivity : ComponentActivity() {
                     ) { paddingValues ->
                         NavHost(
                             navController = navController,
-                            startDestination = Screen.ClientesMainScreen.route,
+                            startDestination = Screen.ReservasMainScreen.route,
                             modifier = Modifier.padding(paddingValues)
                         ) {
                             composable(route = Screen.ClientesMainScreen.route) {
@@ -69,7 +70,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate(Screen.ClientesDetailScreen.route + "?clienteId=$clienteId")
                                     },
                                     onNavigateToReservas = {
-                                        //TODO
+                                        navController.navigate(Screen.ReservasMainScreen.route)
                                     },
                                     onNavigateToPagos = {
                                         //TODO
@@ -135,6 +136,34 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToEditCliente = { clienteId ->
                                         navController.navigate(Screen.ClientesAddEditScreen.route + "?clienteId=$clienteId")
                                     }
+                                )
+                            }
+                            composable(route = Screen.ReservasMainScreen.route) {
+                                ReservasMainScreen(
+                                    onComposing = {
+                                        scaffoldElementsState = it
+                                    },
+                                    onShowSnackbar = { message, actionLabel, duration ->
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                message,
+                                                actionLabel,
+                                                duration
+                                            )
+                                        }
+                                    },
+                                    onNavigateToCreateReserva = {
+                                        //todo
+                                    },
+                                    onNavigateToReservaDetail = { reservaId ->
+                                        //todo
+                                    },
+                                    onNavigateToClientes = {
+                                        navController.navigate(Screen.ClientesMainScreen.route)
+                                    },
+                                    onNavigateToPagos = {
+                                        //TODO
+                                    },
                                 )
                             }
                         }
