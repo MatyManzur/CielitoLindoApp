@@ -20,4 +20,6 @@ data class ClientesAddEditState(
     val email: TextFieldState = TextFieldState(label = "Email"),
     val observaciones: TextFieldState = TextFieldState(label = "Observaciones"),
 ) {
+    val isSaveEnabled: Boolean
+        get() = nombre.text.isNotBlank()
 }

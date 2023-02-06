@@ -2,7 +2,6 @@ package com.example.cielitolindo.presentation.clientes.clientes_main.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -12,16 +11,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.cielitolindo.domain.model.Cliente
+import com.example.cielitolindo.domain.model.Reserva
 import com.example.cielitolindo.domain.model.getDireccionCompleta
 import com.example.cielitolindo.domain.model.getNombreCompleto
+import com.example.cielitolindo.presentation.clientes.clientes_detail.components.ReservaButton
 import java.time.LocalDate
 
 @Composable
 fun ClienteItem(
     cliente: Cliente,
     modifier: Modifier = Modifier,
-    cornerRadius: Dp = 8.dp
+    cornerRadius: Dp = 8.dp,
+    reservasOfCliente: List<Reserva>,
+    onNavigateToReservaDetail: (String) -> Unit,
 ) {
     Surface(
         modifier = modifier
@@ -64,24 +68,43 @@ fun ClienteItem(
                 modifier = Modifier
                     .height(IntrinsicSize.Min)
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
+                horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth(0.5f).padding(vertical = 8.dp, horizontal = 16.dp),
+                    modifier = Modifier
+                        .weight(50f)
+                        .padding(vertical = 8.dp, horizontal = 10.dp),
                 ) {
                     Text(
                         text = "Últimos alquileres:",
                         style = MaterialTheme.typography.body2
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    for (reserva in reservasOfCliente.sortedBy { r -> r.fechaEgreso }.takeLast(2)) {
+                        ReservaButton(
+                            reserva = reserva,
+                            onClick = { onNavigateToReservaDetail(reserva.id) },
+                            modifier = Modifier
+                                .padding(bottom = 4.dp)
+                                .height(22.dp),
+                            datePattern = "dd/MM/yy",
+                        )
+                    }
                 }
-                Divider(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(1.dp),
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f),
-                )
                 Column(
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Divider(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(1.dp),
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f),
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .weight(50f)
+                        .padding(vertical = 8.dp, horizontal = 10.dp),
                 ) {
                     Text(
                         text = "Saldo Pendiente:",
@@ -91,24 +114,4 @@ fun ClienteItem(
             }
         }
     }
-}
-
-//Preview
-@Preview
-@Composable
-fun ClienteItemPreview() {
-    val cliente = Cliente(
-        id = "aaaakljfkdfja",
-        nombre = "Juan",
-        dni = 12345678,
-        apellido = "Perez",
-        direccion = "Calle 123",
-        telefono = "123456789",
-        email = "",
-        localidad = "Villa Carlos Paz",
-        provincia = "Cordoba",
-        fechaInscripcion = LocalDate.now(),
-        observaciones = ""
-    )
-    ClienteItem(cliente = cliente)
 }

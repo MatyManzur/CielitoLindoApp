@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun NameValueText(
@@ -26,17 +28,18 @@ fun NameValueText(
     ) {
         Text(
             text = fieldName,
-            style = MaterialTheme.typography.caption,
+            fontSize = 14.sp,
             color = textColor.copy(alpha = 0.6f),
             textAlign = TextAlign.Start,
             overflow = TextOverflow.Ellipsis,
-            maxLines = 1
+            maxLines = 1,
         )
         Text(
             text = fieldValue,
-            style = MaterialTheme.typography.body1,
+            fontSize = 20.sp,
             color = textColor,
             textAlign = TextAlign.Start,
+            fontWeight = FontWeight.Normal,
         )
     }
 }

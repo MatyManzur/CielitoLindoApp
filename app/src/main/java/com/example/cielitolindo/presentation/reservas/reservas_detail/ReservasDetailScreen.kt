@@ -1,11 +1,9 @@
-package com.example.cielitolindo.presentation.clientes.clientes_detail
+package com.example.cielitolindo.presentation.reservas.reservas_detail
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -15,14 +13,18 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cielitolindo.domain.model.getDireccionCompleta
 import com.example.cielitolindo.domain.model.getNombreCompleto
+import com.example.cielitolindo.domain.model.getRangoDeFechasString
+import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDetailEvent
+import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDetailVM
 import com.example.cielitolindo.presentation.clientes.clientes_detail.components.ReservaButton
 import com.example.cielitolindo.presentation.components.NameValueText
+import com.example.cielitolindo.presentation.components.RoundedCornerIconButton
 import com.example.cielitolindo.presentation.util.LoadingState
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun ClientesDetailScreen(
+fun ReservasDetailScreen(
     onComposing: (ScaffoldElementsState) -> Unit,
     onShowSnackbar: (
         message: String,
@@ -30,9 +32,9 @@ fun ClientesDetailScreen(
         duration: SnackbarDuration
     ) -> Unit,
     onNavigateUp: () -> Unit,
-    onNavigateToEditCliente: (String) -> Unit,
-    onNavigateToReservaDetail: (String) -> Unit,
-    viewModel: ClientesDetailVM = hiltViewModel()
+    onNavigateToEditReserva: (String) -> Unit,
+    onNavigateToClienteDetail: (String) -> Unit,
+    viewModel: ReservasDetailVM = hiltViewModel()
 ) {
     val state = viewModel.state.value
 
@@ -42,13 +44,13 @@ fun ClientesDetailScreen(
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = {
-                            viewModel.onEvent(ClientesDetailEvent.OnEdit)
+                            viewModel.onEvent(ReservasDetailEvent.OnEdit)
                         },
                         backgroundColor = MaterialTheme.colors.secondary
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Edit,
-                            contentDescription = "Editar Cliente",
+                            contentDescription = "Editar Reserva",
                             tint = MaterialTheme.colors.onSecondary
                         )
                     }
@@ -57,7 +59,7 @@ fun ClientesDetailScreen(
                     TopAppBar(
                         title = {
                             Text(
-                                text = "Detalle de Cliente",
+                                text = "Detalle de Reserva",
                                 color = MaterialTheme.colors.onPrimary
                             )
                         },
@@ -71,10 +73,10 @@ fun ClientesDetailScreen(
                             }
                         },
                         actions = {
-                            IconButton(onClick = { viewModel.onEvent(ClientesDetailEvent.OnShowDeleteConfirmationDialog) }) {
+                            IconButton(onClick = { viewModel.onEvent(ReservasDetailEvent.OnShowDeleteConfirmationDialog) }) {
                                 Icon(
                                     imageVector = Icons.Filled.Delete,
-                                    contentDescription = "Eliminar Cliente",
+                                    contentDescription = "Eliminar Reserva",
                                     tint = MaterialTheme.colors.onPrimary
                                 )
                             }
@@ -86,79 +88,58 @@ fun ClientesDetailScreen(
         )
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is ClientesDetailVM.UiEvent.ShowSnackbar -> {
-                    onShowSnackbar(event.message, null, SnackbarDuration.Short)
+                is ReservasDetailVM.UiEvent.EditReserva -> {
+                    onNavigateToEditReserva(event.reservaId)
                 }
-                is ClientesDetailVM.UiEvent.EditCliente -> {
-                    onNavigateToEditCliente(event.clienteId)
-                }
-                is ClientesDetailVM.UiEvent.Exit -> {
+                ReservasDetailVM.UiEvent.Exit -> {
                     onNavigateUp()
+                }
+                is ReservasDetailVM.UiEvent.ShowSnackbar -> {
+                    onShowSnackbar(event.message, null, SnackbarDuration.Short)
                 }
             }
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        if (state.cliente != null) {
-            Text(text = "Información del Cliente", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Medium)
+        if (state.reserva != null) {
+            Text(text = "Datos de la Reserva", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Medium)
             Spacer(modifier = Modifier.height(8.dp))
-            NameValueText(fieldName = "Nombre", fieldValue = state.cliente.getNombreCompleto())
-            Spacer(modifier = Modifier.height(8.dp))
-            if (state.cliente.dni != null) {
-                NameValueText(fieldName = "DNI", fieldValue = state.cliente.dni.toString())
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            if (!state.cliente.getDireccionCompleta().isBlank()) {
-                NameValueText(
-                    fieldName = "Dirección",
-                    fieldValue = state.cliente.getDireccionCompleta()
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                NameValueText(fieldName = "Nombre del Cliente", fieldValue = state.clienteName, modifier = Modifier.weight(1f))
+                RoundedCornerIconButton(
+                    onClick = { onNavigateToClienteDetail(state.reserva.clienteId) },
+                    icon = Icons.Filled.PersonSearch,
+                    contentDescription = "Ver cliente",
+                    buttonSize = 36.dp,
+                    iconSize = 28.dp
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            if (!state.cliente.telefono.isNullOrBlank()) {
-                NameValueText(fieldName = "Teléfono", fieldValue = state.cliente.telefono)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            if (!state.cliente.email.isNullOrBlank()) {
-                NameValueText(fieldName = "Email", fieldValue = state.cliente.email)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            if (!state.cliente.observaciones.isNullOrBlank()) {
-                NameValueText(fieldName = "Observaciones", fieldValue = state.cliente.observaciones)
-                Spacer(modifier = Modifier.height(8.dp))
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Divider(modifier = Modifier.fillMaxWidth())
-            if (state.reservasOfCliente.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Reservas del Cliente", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Medium)
-                Spacer(modifier = Modifier.height(8.dp))
-                Column(
-                    modifier = Modifier.padding(horizontal = 0.dp)
-                ) {
-                    for (reserva in state.reservasOfCliente.sortedByDescending { r -> r.fechaEgreso }) {
-                        ReservaButton(
-                            reserva = reserva,
-                            onClick = { onNavigateToReservaDetail(reserva.id) },
-                            modifier = Modifier.padding(bottom = 8.dp).height(32.dp),
-                            textSize = 20.sp
-                        )
-                    }
-                }
+            NameValueText(fieldName = "Casa", fieldValue = state.reserva.casa.stringName)
+            Spacer(modifier = Modifier.height(8.dp))
+            NameValueText(fieldName = "Fechas de Ingreso y Egreso", fieldValue = state.reserva.getRangoDeFechasString("dd MMM yyyy"))
+            Spacer(modifier = Modifier.height(8.dp))
+            NameValueText(fieldName = "Importe Total", fieldValue = state.reserva.moneda.importeToString(state.reserva.importeTotal))
+            Spacer(modifier = Modifier.height(8.dp))
+            if(!state.reserva.observaciones.isNullOrBlank()) {
+                NameValueText(fieldName = "Observaciones", fieldValue = state.reserva.observaciones)
             }
         }
     }
     if (state.showDeleteConfirmationDialog) {
         AlertDialog(
             onDismissRequest = {
-                viewModel.onEvent(ClientesDetailEvent.OnHideDeleteConfirmationDialog)
+                viewModel.onEvent(ReservasDetailEvent.OnHideDeleteConfirmationDialog)
             },
             title = {
-                Text(text = "¿Está seguro que desea eliminar el cliente?")
+                Text(text = "¿Está seguro que desea eliminar la reserva?")
             },
             text = {
                 Text(text = "Esta acción no se puede deshacer.")
@@ -166,7 +147,7 @@ fun ClientesDetailScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.onEvent(ClientesDetailEvent.OnDelete)
+                        viewModel.onEvent(ReservasDetailEvent.OnDelete)
                     }
                 ) {
                     if (state.loadingInfo.loadingState == LoadingState.READY) {
@@ -183,7 +164,7 @@ fun ClientesDetailScreen(
             dismissButton = {
                 Button(
                     onClick = {
-                        viewModel.onEvent(ClientesDetailEvent.OnHideDeleteConfirmationDialog)
+                        viewModel.onEvent(ReservasDetailEvent.OnHideDeleteConfirmationDialog)
                     }
                 ) {
                     Text(text = "No")
@@ -191,5 +172,4 @@ fun ClientesDetailScreen(
             },
         )
     }
-
 }

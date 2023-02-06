@@ -5,11 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cielitolindo.domain.model.Cliente
+import com.example.cielitolindo.domain.model.Reserva
 import com.example.cielitolindo.domain.use_case.clientes.ClienteUseCases
+import com.example.cielitolindo.domain.use_case.reservas.ReservaUseCases
 import com.example.cielitolindo.domain.util.ClienteOrder
 import com.example.cielitolindo.domain.util.OrderType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -17,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ClientesMainVM @Inject constructor(
-    private val clienteUseCases: ClienteUseCases
+    private val clienteUseCases: ClienteUseCases,
+    private val reservaUseCases: ReservaUseCases,
 ) : ViewModel() {
     private val _state = mutableStateOf(ClientesState())
     val state: State<ClientesState> = _state
@@ -62,6 +66,13 @@ class ClientesMainVM @Inject constructor(
                 _state.value = state.value.copy(
                     clientes = clientes,
                     clientesOrder = clienteOrder
+                )
+                val map = mutableMapOf<String, List<Reserva>>()
+                for (cliente in clientes) {
+                    map[cliente.id] = reservaUseCases.getReservasFromCliente(cliente.id).first()
+                }
+                _state.value = state.value.copy(
+                    reservasOfClientes = map
                 )
             }
             .launchIn(viewModelScope)

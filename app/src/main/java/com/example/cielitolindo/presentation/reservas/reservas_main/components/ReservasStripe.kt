@@ -7,20 +7,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.cielitolindo.domain.model.Reserva
-import com.example.cielitolindo.domain.model.getShortRangoDeFechas
+import com.example.cielitolindo.domain.model.getRangoDeFechasString
+import com.example.cielitolindo.presentation.util.colorVariation
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+
+
 
 @Composable
 fun ReservasStripe(
     onClickReserva: (Reserva) -> Unit,
     getClienteNameAtIndex: (Int) -> String,
     modifier: Modifier = Modifier,
-    firstColor: Color,
-    secondColor: Color,
     onColor: Color,
     reservas: List<Reserva>,
     firstDayOfWeek: LocalDate,
@@ -33,61 +36,107 @@ fun ReservasStripe(
             .height(stripeSize.height),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        var firstOffset = 0.5f
-        var j = 0
+        val lastDayOfWeek = firstDayOfWeek.plusDays(6)
+        var offsetForLastSpace = 0.5f
         for ((i, reserva) in reservas.withIndex()) {
-            if(!day.isAfter(reserva.fechaIngreso)) {
+            if (day.isEqual(firstDayOfWeek) && !day.isAfter(reserva.fechaIngreso)) {
+                Spacer(modifier = Modifier.weight(0.5f))
+            }
+            if (day.isBefore(reserva.fechaIngreso)) {
                 val spaceRange = ChronoUnit.DAYS.between(day, reserva.fechaIngreso)
-                Spacer(modifier = Modifier.weight(spaceRange.toFloat() + firstOffset))
-                firstOffset = 0f
+                Spacer(modifier = Modifier.weight(spaceRange.toFloat()))
+                //Text(text="...${spaceRange.toFloat() + if(day==firstDayOfWeek) 0.5f else 0f}...")
                 day = day.plusDays(spaceRange)
             }
-            val range = ChronoUnit.DAYS.between(day, reserva.fechaEgreso)
-            Button(
-                onClick = { onClickReserva(reserva) },
+            val range = ChronoUnit.DAYS.between(
+                day,
+                if (reserva.fechaEgreso.isBefore(lastDayOfWeek)) reserva.fechaEgreso else lastDayOfWeek
+            )
+            //Text(text="[${getClienteNameAtIndex(i)}: ${range.toFloat() + if(reserva.fechaIngreso.isBefore(firstDayOfWeek)) 0.5f else 0f + if(reserva.fechaEgreso.isAfter(lastDayOfWeek)) 0.5f else 0f}]")
+            Box(
                 modifier = Modifier
                     .height(stripeSize.height)
-                    .weight(range.toFloat() + firstOffset),
-                colors = ButtonDefaults.buttonColors(backgroundColor = if(j++ % 2 == 0) firstColor else secondColor)
-            ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 2.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    when (stripeSize) {
-                        StripeSize.SINGLE_LINE -> {
-                            Text(
-                                text = "${getClienteNameAtIndex(i)} ${reserva.getShortRangoDeFechas()}".uppercase(),
-                                style = MaterialTheme.typography.body1,
-                                fontWeight = FontWeight.Bold,
-                                color = onColor,
+                    .weight(
+                        range.toFloat() + if (reserva.fechaIngreso.isBefore(firstDayOfWeek)) 0.5f else 0f + if (reserva.fechaEgreso.isAfter(
+                                lastDayOfWeek
                             )
+                        ) 0.5f.also { offsetForLastSpace = 0f } else 0f.also {
+                            offsetForLastSpace = 0.5f
                         }
-                        StripeSize.EXPANDED -> {
-                            Text(
-                                text = getClienteNameAtIndex(i).uppercase(),
-                                style = MaterialTheme.typography.h5,
-                                fontWeight = FontWeight.Bold,
-                                color = onColor,
-                            )
-                            Text(
-                                text = reserva.getShortRangoDeFechas().uppercase(),
-                                style = MaterialTheme.typography.h6,
-                                fontWeight = FontWeight.Normal,
-                                color = onColor,
-                            )
-                            Text(
-                                text = reserva.moneda.importeToString(reserva.importeTotal),
-                                style = MaterialTheme.typography.body2,
-                                fontWeight = FontWeight.Light,
-                                color = onColor,
-                            )
+                    ),
+            ) {
+                val baseColor = reserva.casa.getFirstColor()
+                Button(
+                    onClick = { onClickReserva(reserva) },
+                    modifier = Modifier.fillMaxSize(),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = baseColor.copy(
+                            red = colorVariation(baseColor.red, reserva.id.hashCode(), 3),
+                            green = colorVariation(baseColor.green, reserva.id.hashCode(), 9),
+                            blue = colorVariation(baseColor.blue, reserva.id.hashCode(), 7)
+                        )
+                    )
+                ) {}
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    Spacer(modifier = Modifier.weight(2f))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(96f),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        when (stripeSize) {
+                            StripeSize.SINGLE_LINE -> {
+                                Text(
+                                    text = "\t${getClienteNameAtIndex(i)} ${reserva.getRangoDeFechasString()}".uppercase(),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = onColor,
+                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = 1
+                                )
+                            }
+                            StripeSize.EXPANDED -> {
+                                Text(
+                                    text = getClienteNameAtIndex(i).uppercase(),
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = onColor,
+                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = 1
+                                )
+                                Row() {
+                                    Text(
+                                        text = reserva.getRangoDeFechasString().uppercase(),
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        color = onColor,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 1
+                                    )
+                                    Text(
+                                        text = " - " + reserva.moneda.importeToString(reserva.importeTotal),
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Light,
+                                        color = onColor,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 1
+                                    )
+                                }
+                            }
                         }
                     }
+                    Spacer(modifier = Modifier.weight(2f))
                 }
             }
-            firstOffset = 0f
             day = day.plusDays(range)
+        }
+        if (day.isBefore(lastDayOfWeek) || (offsetForLastSpace > 0f && day.isEqual(lastDayOfWeek))) {
+            val spaceRange = ChronoUnit.DAYS.between(day, lastDayOfWeek)
+            Spacer(modifier = Modifier.weight(spaceRange.toFloat() + offsetForLastSpace))
         }
     }
 }

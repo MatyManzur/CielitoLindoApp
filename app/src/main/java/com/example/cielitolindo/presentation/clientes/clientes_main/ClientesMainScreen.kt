@@ -33,6 +33,7 @@ fun ClientesMainScreen(
     ) -> Unit,
     onNavigateToCreateCliente: () -> Unit,
     onNavigateToClienteDetail: (String) -> Unit,
+    onNavigateToReservaDetail: (String) -> Unit,
     onNavigateToReservas: () -> Unit,
     onNavigateToPagos: () -> Unit,
     viewModel: ClientesMainVM = hiltViewModel()
@@ -127,6 +128,8 @@ fun ClientesMainScreen(
                             .clickable {
                                 onNavigateToClienteDetail(cliente.id)
                             },
+                        reservasOfCliente = state.reservasOfClientes.getOrDefault(cliente.id, listOf()),
+                        onNavigateToReservaDetail = onNavigateToReservaDetail
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }

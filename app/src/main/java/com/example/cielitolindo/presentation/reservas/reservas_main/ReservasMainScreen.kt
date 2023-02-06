@@ -15,6 +15,8 @@ import com.example.cielitolindo.domain.model.Casa
 import com.example.cielitolindo.presentation.components.BottomNav
 import com.example.cielitolindo.presentation.components.BottomNavigationOptions
 import com.example.cielitolindo.presentation.reservas.reservas_main.components.*
+import com.example.cielitolindo.presentation.util.LoadingInfo
+import com.example.cielitolindo.presentation.util.LoadingState
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
 
 @Composable
@@ -81,7 +83,8 @@ fun ReservasMainScreen(
             currentMonth = state.yearMonth,
             onPreviousMonth = { viewModel.onEvent(ReservasEvent.PreviousMonth) },
             onNextMonth = { viewModel.onEvent(ReservasEvent.NextMonth) },
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(8.dp),
+            buttonsEnabled = state.loadingInfo.loadingState == LoadingState.READY
         )
         Box(
             modifier = Modifier
@@ -92,9 +95,9 @@ fun ReservasMainScreen(
             Column {
                 WeekdaysLabels(modifier = Modifier.padding(horizontal = horizontalPadding))
                 Divider()
-                for ((i, reservasWeek) in state.reservasWeeks.withIndex()) {
+                for ((i, week) in state.weeks.withIndex()) {
                     DaysNumberLabels(
-                        startingDay = reservasWeek.week.first(),
+                        startingDay = week.first(),
                         modifier = Modifier.padding(horizontal = horizontalPadding),
                         month = state.yearMonth.month,
                         todayColor = state.activeCasa?.getSecondColor() ?: MaterialTheme.colors.secondary
@@ -102,34 +105,27 @@ fun ReservasMainScreen(
                     when (state.activeCasa) {
                         null -> {
                             for (c in Casa.values()) {
-                                val reservasWeekOfCasa = reservasWeek.copy(
-                                    reservasInWeek = reservasWeek.reservasInWeek.filter { r -> r.reserva.casa == c }
-                                )
-                                val (firstColor, secondColor) = if((reservasWeekOfCasa.reservasInWeek.firstOrNull()?.ordinal ?: 0) % 2 == 0) c.getFirstColor() to c.getSecondColor() else c.getSecondColor() to c.getFirstColor()
+                                val reservasWeekOfCasa = state.reservasWeeks[i].filter { r -> r.reserva.casa == c }
                                 val onColor = c.getOnColor()
                                 ReservasStripe(
                                     onClickReserva = { onNavigateToReservaDetail(it.id) },
-                                    getClienteNameAtIndex = { reservasWeekOfCasa.reservasInWeek[it].clienteName },
-                                    firstColor = firstColor,
-                                    secondColor = secondColor,
+                                    getClienteNameAtIndex = { reservasWeekOfCasa[it].clienteName },
                                     onColor = onColor,
-                                    reservas = reservasWeekOfCasa.reservasInWeek.map { ri -> ri.reserva },
-                                    firstDayOfWeek = reservasWeekOfCasa.week.first(),
+                                    reservas = reservasWeekOfCasa.map { ri -> ri.reserva },
+                                    firstDayOfWeek = week.first(),
                                     stripeSize = StripeSize.SINGLE_LINE
                                 )
                             }
                         }
                         else -> {
-                            val (firstColor, secondColor) = if((reservasWeek.reservasInWeek.firstOrNull()?.ordinal ?: 0) % 2 == 0) state.activeCasa.getFirstColor() to state.activeCasa.getSecondColor() else state.activeCasa.getSecondColor() to state.activeCasa.getFirstColor()
+                            val reservasWeek = state.reservasWeeks[i]
                             val onColor = state.activeCasa.getOnColor()
                             ReservasStripe(
                                 onClickReserva = { onNavigateToReservaDetail(it.id) },
-                                getClienteNameAtIndex = { reservasWeek.reservasInWeek[it].clienteName },
-                                firstColor = firstColor,
-                                secondColor = secondColor,
+                                getClienteNameAtIndex = { reservasWeek[it].clienteName },
                                 onColor = onColor,
-                                reservas = reservasWeek.reservasInWeek.map { ri -> ri.reserva },
-                                firstDayOfWeek = reservasWeek.week.first(),
+                                reservas = reservasWeek.map { ri -> ri.reserva },
+                                firstDayOfWeek = week.first(),
                                 stripeSize = StripeSize.EXPANDED
                             )
                         }

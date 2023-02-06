@@ -27,7 +27,7 @@ class TypesConverter {
 
     @TypeConverter
     fun casaToString(casa: Casa?): String? {
-        return casa?.toString()
+        return casa?.name
     }
 
     @TypeConverter
@@ -37,6 +37,6 @@ class TypesConverter {
 
     @TypeConverter
     fun monedaToString(moneda: Moneda?): String? {
-        return moneda?.toString()
+        return moneda?.name
     }
 }

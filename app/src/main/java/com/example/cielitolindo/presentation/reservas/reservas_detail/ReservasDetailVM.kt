@@ -1,4 +1,4 @@
-package com.example.cielitolindo.presentation.clientes.clientes_detail
+package com.example.cielitolindo.presentation.reservas.reservas_detail
 
 import android.os.Handler
 import androidx.compose.runtime.State
@@ -6,10 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cielitolindo.domain.model.Reserva
 import com.example.cielitolindo.domain.model.getNombreCompleto
 import com.example.cielitolindo.domain.use_case.clientes.ClienteUseCases
 import com.example.cielitolindo.domain.use_case.reservas.ReservaUseCases
-import com.example.cielitolindo.presentation.clientes.clientes_add_edit.ClientesAddEditVM
+import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDetailVM
 import com.example.cielitolindo.presentation.util.LoadingInfo
 import com.example.cielitolindo.presentation.util.LoadingState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,36 +21,34 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ClientesDetailVM @Inject constructor(
-    private val clienteUseCases: ClienteUseCases,
+class ReservasDetailVM @Inject constructor(
     private val reservaUseCases: ReservaUseCases,
+    private val clienteUseCases: ClienteUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val _state = mutableStateOf(ClientesDetailState())
-    val state: State<ClientesDetailState> = _state
+    private val _state = mutableStateOf(ReservasDetailState())
+    val state: State<ReservasDetailState> = _state
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-        savedStateHandle.get<String>("clienteId")?.let { id ->
+        savedStateHandle.get<String>("reservaId")?.let { id ->
             viewModelScope.launch {
-                clienteUseCases.getCliente(id)?.also { cliente ->
+                reservaUseCases.getReserva(id)?.also { reserva ->
                     _state.value = state.value.copy(
                         id = id,
-                        cliente = cliente
+                        reserva = reserva,
+                        clienteName = clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: ""
                     )
                 }
-                _state.value = state.value.copy(
-                    reservasOfCliente = reservaUseCases.getReservasFromCliente(id).first()
-                )
             }
         }
     }
 
-    fun onEvent(event: ClientesDetailEvent) {
+    fun onEvent(event: ReservasDetailEvent) {
         when (event) {
-            ClientesDetailEvent.OnDelete -> {
+            ReservasDetailEvent.OnDelete -> {
                 _state.value = state.value.copy(
                     loadingInfo = LoadingInfo(LoadingState.LOADING)
                 )
@@ -61,7 +60,7 @@ class ClientesDetailVM @Inject constructor(
                                 viewModelScope.launch {
                                     _eventFlow.emit(
                                         UiEvent.ShowSnackbar(
-                                            "Ocurrió un error en la conexión a la base de datos remota, el cliente se eliminará localmente y se intentará de nuevo cuando mejore la conexión!"
+                                            "Ocurrió un error en la conexión a la base de datos remota, la reserva se eliminará localmente y se intentará de nuevo cuando mejore la conexión!"
                                         )
                                     )
                                     _eventFlow.emit(UiEvent.Exit)
@@ -87,65 +86,75 @@ class ClientesDetailVM @Inject constructor(
                             }
                         }
                     }, state.value.loadingInfo.loadingTimeout)
-                    val cliente = state.value.cliente
+                    val reserva = state.value.reserva
                     try {
-                        if(cliente != null) {
-                            clienteUseCases.deleteCliente(
-                                cliente = cliente,
+                        if (reserva != null) {
+                            reservaUseCases.deleteReserva(
+                                reserva = reserva,
                                 onFirebaseSuccessListener = {
                                     _state.value = state.value.copy(
-                                        loadingInfo = LoadingInfo(LoadingState.SUCCESS, "El cliente ${cliente.getNombreCompleto()} ha sido eliminado correctamente!")
+                                        loadingInfo = LoadingInfo(
+                                            LoadingState.SUCCESS,
+                                            "La reserva ha sido eliminada correctamente!"
+                                        )
                                     )
                                 },
                                 onFirebaseFailureListener = {
                                     _state.value = state.value.copy(
-                                        loadingInfo = LoadingInfo(LoadingState.ERROR, "Error al eliminar el cliente ${cliente.getNombreCompleto()}: ${it.message}")
+                                        loadingInfo = LoadingInfo(
+                                            LoadingState.ERROR,
+                                            "Error al eliminar la reserva: ${it.message}"
+                                        )
                                     )
                                 }
                             )
                         } else {
                             _state.value = state.value.copy(
-                                loadingInfo = LoadingInfo(LoadingState.ERROR, "Error inesperado: No se pudo encontrar el cliente!")
+                                loadingInfo = LoadingInfo(
+                                    LoadingState.ERROR,
+                                    "Error inesperado: No se pudo encontrar la reserva!"
+                                )
                             )
                         }
 
                     } catch (e: Exception) {
                         _state.value = state.value.copy(
-                            loadingInfo = LoadingInfo(LoadingState.ERROR, "Error al eliminar el cliente ${cliente?.getNombreCompleto() ?: ""}: ${e.message}")
+                            loadingInfo = LoadingInfo(
+                                LoadingState.ERROR,
+                                "Error al eliminar la reserva: ${e.message}"
+                            )
                         )
                     }
                 }
             }
-            ClientesDetailEvent.OnEdit -> {
-                if(state.value.id != "") {
+            ReservasDetailEvent.OnEdit -> {
+                if (state.value.id != "") {
                     viewModelScope.launch {
-                        _eventFlow.emit(UiEvent.EditCliente(state.value.id))
+                        _eventFlow.emit(UiEvent.EditReserva(state.value.id))
                     }
-                }
-                else {
+                } else {
                     viewModelScope.launch {
-                        _eventFlow.emit(UiEvent.ShowSnackbar("Error inesperado: No se encontró el cliente"))
+                        _eventFlow.emit(UiEvent.ShowSnackbar("Error inesperado: No se encontró la reserva"))
                     }
                 }
             }
-            ClientesDetailEvent.OnShowDeleteConfirmationDialog -> {
-                _state.value = state.value.copy(
-                    showDeleteConfirmationDialog = true
-                )
-            }
-            ClientesDetailEvent.OnHideDeleteConfirmationDialog -> {
+            ReservasDetailEvent.OnHideDeleteConfirmationDialog -> {
                 _state.value = state.value.copy(
                     showDeleteConfirmationDialog = false
+                )
+            }
+            ReservasDetailEvent.OnShowDeleteConfirmationDialog -> {
+                _state.value = state.value.copy(
+                    showDeleteConfirmationDialog = true
                 )
             }
         }
     }
 
+
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
-        data class EditCliente(val clienteId: String) : UiEvent()
+        data class EditReserva(val reservaId: String) : UiEvent()
         object Exit : UiEvent()
     }
-
 }
-

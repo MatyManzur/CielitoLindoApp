@@ -2,10 +2,7 @@ package com.example.cielitolindo.data.data_source
 
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.room.PrimaryKey
-import com.example.cielitolindo.domain.model.Cliente
-import com.example.cielitolindo.domain.model.Cobro
-import com.example.cielitolindo.domain.model.Gasto
-import com.example.cielitolindo.domain.model.Reserva
+import com.example.cielitolindo.domain.model.*
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.firestore.ktx.firestore
@@ -26,14 +23,21 @@ class Firestore {
         return clientes
     }
 
-    fun setCliente(cliente: Cliente, onSuccessListener: () -> Unit, onFailureListener: (Exception) -> Unit) {
+    fun setCliente(
+        cliente: Cliente,
+        onSuccessListener: () -> Unit,
+        onFailureListener: (Exception) -> Unit
+    ) {
         db.collection("cliente").document(cliente.id).set(FirestoreCliente(cliente))
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
     }
 
-    fun deleteCliente(cliente: Cliente, onSuccessListener: () -> Unit, onFailureListener: (Exception) -> Unit) {
-
+    fun deleteCliente(
+        cliente: Cliente,
+        onSuccessListener: () -> Unit,
+        onFailureListener: (Exception) -> Unit
+    ) {
         db.collection("cliente").document(cliente.id).delete()
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
@@ -42,18 +46,26 @@ class Firestore {
     suspend fun getReservas(): List<Reserva> {
         val reservas = mutableListOf<Reserva>()
         db.collection("reserva").get().await().forEach { document ->
-            reservas.add(document.toObject())
+            reservas.add(document.toObject<FirestoreReserva>().toReserva())
         }
         return reservas
     }
 
-    fun setReserva(reserva: Reserva, onSuccessListener: () -> Unit, onFailureListener: (Exception) -> Unit) {
-        db.collection("reserva").document(reserva.id).set(reserva)
+    fun setReserva(
+        reserva: Reserva,
+        onSuccessListener: () -> Unit,
+        onFailureListener: (Exception) -> Unit
+    ) {
+        db.collection("reserva").document(reserva.id).set(FirestoreReserva(reserva))
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
     }
 
-    fun deleteReserva(reserva: Reserva, onSuccessListener: () -> Unit, onFailureListener: (Exception) -> Unit) {
+    fun deleteReserva(
+        reserva: Reserva,
+        onSuccessListener: () -> Unit,
+        onFailureListener: (Exception) -> Unit
+    ) {
         db.collection("reserva").document(reserva.id).delete()
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
@@ -67,13 +79,21 @@ class Firestore {
         return gastos
     }
 
-    fun setGasto(gasto: Gasto, onSuccessListener: () -> Unit, onFailureListener: (Exception) -> Unit) {
+    fun setGasto(
+        gasto: Gasto,
+        onSuccessListener: () -> Unit,
+        onFailureListener: (Exception) -> Unit
+    ) {
         db.collection("gasto").document(gasto.id).set(gasto)
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
     }
 
-    fun deleteGasto(gasto: Gasto, onSuccessListener: () -> Unit, onFailureListener: (Exception) -> Unit) {
+    fun deleteGasto(
+        gasto: Gasto,
+        onSuccessListener: () -> Unit,
+        onFailureListener: (Exception) -> Unit
+    ) {
         db.collection("gasto").document(gasto.id).delete()
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
@@ -87,13 +107,21 @@ class Firestore {
         return cobros
     }
 
-    fun setCobro(cobro: Cobro, onSuccessListener: () -> Unit, onFailureListener: (Exception) -> Unit) {
+    fun setCobro(
+        cobro: Cobro,
+        onSuccessListener: () -> Unit,
+        onFailureListener: (Exception) -> Unit
+    ) {
         db.collection("cobro").document(cobro.id).set(cobro)
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
     }
 
-    fun deleteCobro(cobro: Cobro, onSuccessListener: () -> Unit, onFailureListener: (Exception) -> Unit) {
+    fun deleteCobro(
+        cobro: Cobro,
+        onSuccessListener: () -> Unit,
+        onFailureListener: (Exception) -> Unit
+    ) {
         db.collection("cobro").document(cobro.id).delete()
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
@@ -115,7 +143,6 @@ data class FirestoreCliente(
     val email: String?,
     val observaciones: String?
 ) {
-
     fun toCliente(): Cliente {
         return Cliente(
             id,
@@ -131,6 +158,7 @@ data class FirestoreCliente(
             observaciones
         )
     }
+
     constructor(cliente: Cliente) : this(
         cliente.id,
         cliente.nombre,
@@ -146,4 +174,41 @@ data class FirestoreCliente(
     )
 
     constructor() : this("", "", null, "", null, null, null, null, null, null, null)
+}
+
+data class FirestoreReserva(
+    val id: String,
+    val clienteId: String,
+    val casa: String,
+    val fechaIngreso: String,
+    val fechaEgreso: String,
+    val importeTotal: Float,
+    val moneda: String,
+    val observaciones: String?,
+) {
+    fun toReserva(): Reserva {
+        return Reserva(
+            id = id,
+            clienteId = clienteId,
+            casa = Casa.valueOf(casa),
+            fechaIngreso = LocalDate.parse(fechaIngreso, formatter),
+            fechaEgreso = LocalDate.parse(fechaEgreso, formatter),
+            importeTotal = importeTotal,
+            moneda = Moneda.valueOf(moneda),
+            observaciones = observaciones
+        )
+    }
+
+    constructor(reserva: Reserva) : this(
+        id = reserva.id,
+        clienteId = reserva.clienteId,
+        casa = reserva.casa.name,
+        fechaIngreso = reserva.fechaIngreso.format(formatter),
+        fechaEgreso = reserva.fechaEgreso.format(formatter),
+        importeTotal = reserva.importeTotal,
+        moneda = reserva.moneda.name,
+        observaciones = reserva.observaciones
+    )
+
+    constructor() : this("", "", "", "", "", 0f, "", null)
 }

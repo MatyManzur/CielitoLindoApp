@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,21 +36,26 @@ fun ClientesAddEditScreen(
 ) {
     val state = viewModel.state.value
 
-    LaunchedEffect(key1 = true, key2 = state.loadingInfo.loadingState == LoadingState.READY) {
+    LaunchedEffect(
+        key1 = true,
+        key2 = state.loadingInfo.loadingState == LoadingState.READY,
+        key3 = state.isSaveEnabled
+    ) {
         onComposing(
             ScaffoldElementsState(
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = {
-                            viewModel.onEvent(ClientesAddEditEvent.OnSave)
+                            if (state.isSaveEnabled)
+                                viewModel.onEvent(ClientesAddEditEvent.OnSave)
                         },
-                        backgroundColor = MaterialTheme.colors.secondary
+                        backgroundColor = if(state.isSaveEnabled) MaterialTheme.colors.secondary else Color.Gray
                     ) {
                         if (state.loadingInfo.loadingState == LoadingState.READY) {
                             Icon(
                                 imageVector = Icons.Filled.Save,
                                 contentDescription = "Guardar Cliente",
-                                tint = MaterialTheme.colors.onSecondary
+                                tint = MaterialTheme.colors.onSecondary.copy(alpha = if (state.isSaveEnabled) 1f else .5f)
                             )
                         } else {
                             CircularProgressIndicator(

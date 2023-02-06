@@ -3,6 +3,7 @@ package com.example.cielitolindo.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
@@ -18,6 +19,8 @@ import androidx.navigation.navArgument
 import com.example.cielitolindo.presentation.clientes.clientes_add_edit.ClientesAddEditScreen
 import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDetailScreen
 import com.example.cielitolindo.presentation.clientes.clientes_main.ClientesMainScreen
+import com.example.cielitolindo.presentation.reservas.reservas_add_edit.ReservasAddEditScreen
+import com.example.cielitolindo.presentation.reservas.reservas_detail.ReservasDetailScreen
 import com.example.cielitolindo.presentation.reservas.reservas_main.ReservasMainScreen
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
 import com.example.cielitolindo.presentation.util.Screen
@@ -26,7 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -68,6 +71,9 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onNavigateToClienteDetail = { clienteId ->
                                         navController.navigate(Screen.ClientesDetailScreen.route + "?clienteId=$clienteId")
+                                    },
+                                    onNavigateToReservaDetail = { reservaId ->
+                                        navController.navigate(Screen.ReservasDetailScreen.route + "?reservaId=$reservaId")
                                     },
                                     onNavigateToReservas = {
                                         navController.navigate(Screen.ReservasMainScreen.route)
@@ -135,6 +141,9 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onNavigateToEditCliente = { clienteId ->
                                         navController.navigate(Screen.ClientesAddEditScreen.route + "?clienteId=$clienteId")
+                                    },
+                                    onNavigateToReservaDetail = { reservaId ->
+                                        navController.navigate(Screen.ReservasDetailScreen.route + "?reservaId=$reservaId")
                                     }
                                 )
                             }
@@ -153,10 +162,10 @@ class MainActivity : ComponentActivity() {
                                         }
                                     },
                                     onNavigateToCreateReserva = {
-                                        //todo
+                                        navController.navigate(Screen.ReservasAddEditScreen.route)
                                     },
                                     onNavigateToReservaDetail = { reservaId ->
-                                        //todo
+                                        navController.navigate(Screen.ReservasDetailScreen.route + "?reservaId=$reservaId")
                                     },
                                     onNavigateToClientes = {
                                         navController.navigate(Screen.ClientesMainScreen.route)
@@ -164,6 +173,71 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToPagos = {
                                         //TODO
                                     },
+                                )
+                            }
+                            composable(
+                                route = Screen.ReservasAddEditScreen.route + "?reservaId={reservaId}",
+                                arguments = listOf(
+                                    navArgument(
+                                        name = "reservaId"
+                                    ) {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    }
+                                )
+                            ) {
+                                ReservasAddEditScreen(
+                                    onComposing = {
+                                        scaffoldElementsState = it
+                                    },
+                                    onShowSnackbar = { message, actionLabel, duration ->
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                message,
+                                                actionLabel,
+                                                duration
+                                            )
+                                        }
+                                    },
+                                    onNavigateUp = {
+                                        navController.popBackStack()
+                                    },
+                                    supportFragmentManager = supportFragmentManager
+                                )
+                            }
+                            composable(
+                                route = Screen.ReservasDetailScreen.route + "?reservaId={reservaId}",
+                                arguments = listOf(
+                                    navArgument(
+                                        name = "reservaId"
+                                    ) {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    }
+                                )
+                            ) {
+                                ReservasDetailScreen(
+                                    onComposing = {
+                                        scaffoldElementsState = it
+                                    },
+                                    onShowSnackbar = { message, actionLabel, duration ->
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                message,
+                                                actionLabel,
+                                                duration
+                                            )
+                                        }
+                                    },
+                                    onNavigateUp = {
+                                        navController.popBackStack()
+                                    },
+                                    onNavigateToEditReserva = { reservaId ->
+                                        navController.navigate(Screen.ReservasAddEditScreen.route + "?reservaId=$reservaId")
+                                    },
+                                    onNavigateToClienteDetail = { clienteId ->
+                                        navController.navigate(Screen.ClientesDetailScreen.route + "?clienteId=$clienteId")
+                                    }
                                 )
                             }
                         }

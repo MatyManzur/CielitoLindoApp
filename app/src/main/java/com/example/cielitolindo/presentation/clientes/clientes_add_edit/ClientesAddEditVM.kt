@@ -37,7 +37,7 @@ class ClientesAddEditVM @Inject constructor(
                         id = cliente.id,
                         nombre = state.value.nombre.copy(text = cliente.nombre),
                         apellido = state.value.apellido.copy(text = cliente.apellido ?: ""),
-                        dni = state.value.dni.copy(text = cliente.dni.toString()),
+                        dni = state.value.dni.copy(text = cliente.dni?.toString() ?: ""),
                         direccion = state.value.direccion.copy(text = cliente.direccion ?: ""),
                         localidad = state.value.localidad.copy(text = cliente.localidad ?: ""),
                         provincia = state.value.provincia.copy(text = cliente.provincia ?: ""),

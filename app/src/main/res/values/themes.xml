@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.CielitoLindo" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/purple_700</item>
+    <style name="Theme.CielitoLindo" parent="@style/Theme.MaterialComponents.NoActionBar">
+        <item name="android:statusBarColor">#00000000</item>
     </style>
 </resources>

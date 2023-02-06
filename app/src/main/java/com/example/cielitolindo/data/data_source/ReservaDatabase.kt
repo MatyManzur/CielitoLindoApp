@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 import com.example.cielitolindo.data.util.TypesConverter
 import com.example.cielitolindo.domain.model.Reserva
 
-@Database(entities = [Reserva::class], version = 1, exportSchema = false)
+@Database(entities = [Reserva::class], version = 2, exportSchema = false)
 @TypeConverters(TypesConverter::class)
 abstract class ReservaDatabase : RoomDatabase() {
     abstract val reservaDao: ReservaDao

@@ -4,6 +4,7 @@ import com.example.cielitolindo.domain.model.*
 import com.example.cielitolindo.domain.repository.ClienteRepository
 import com.example.cielitolindo.domain.repository.FirestoreRepository
 import com.example.cielitolindo.domain.repository.ReservaRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 
 class AddReserva(
@@ -24,14 +25,16 @@ class AddReserva(
                 throw InvalidReservaException("El cliente no existe!")
             }
         }
+        if (!reserva.fechaEgreso.isAfter(reserva.fechaIngreso)) {
+            throw InvalidReservaException("La fecha de egreso debe ser posterior a la fecha de ingreso!")
+        }
         reservaRepository.getReservasInRange(reserva.fechaIngreso, reserva.fechaEgreso)
-            .onEach { list ->
-                list.forEach {
-                    if (it.casa == reserva.casa) {
-                        throw InvalidReservaException("Casa ocupada en esas fechas!")
-                    }
+            .first().forEach {
+                if (it.id != reserva.id && it.casa == reserva.casa && !it.fechaIngreso.isEqual(reserva.fechaEgreso) && !it.fechaEgreso.isEqual(reserva.fechaIngreso)) {
+                    throw InvalidReservaException("Casa ocupada en esas fechas!")
                 }
             }
+
         reservaRepository.insertReserva(reserva)
         try {
             firestoreRepository.setReserva(

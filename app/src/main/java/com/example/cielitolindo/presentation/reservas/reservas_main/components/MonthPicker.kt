@@ -32,7 +32,8 @@ fun MonthPicker(
     currentMonth: YearMonth,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
-    color: Color = MaterialTheme.colors.onSurface
+    color: Color = MaterialTheme.colors.onSurface,
+    buttonsEnabled: Boolean,
 ) {
     val formatter = DateTimeFormatter.ofPattern("MMMM yyyy")
     Row(
@@ -40,7 +41,7 @@ fun MonthPicker(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { onPreviousMonth() }) {
+        IconButton(onClick = { onPreviousMonth() }, enabled = buttonsEnabled) {
             Icon(
                 imageVector = Icons.Filled.NavigateBefore,
                 contentDescription = "Mes Anterior",
@@ -54,7 +55,7 @@ fun MonthPicker(
             color = color,
             fontWeight = FontWeight.Bold
         )
-        IconButton(onClick = { onNextMonth() }) {
+        IconButton(onClick = { onNextMonth() }, enabled = buttonsEnabled) {
             Icon(
                 imageVector = Icons.Filled.NavigateNext,
                 contentDescription = "Mes Siguiente",

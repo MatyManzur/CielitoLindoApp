@@ -25,7 +25,14 @@ fun Cliente.getNombreCompleto(): String {
 }
 
 fun Cliente.getDireccionCompleta(): String {
-    return "$direccion, $localidad, $provincia"
+    var ans = ""
+    if (!direccion.isNullOrBlank())
+        ans = direccion
+    if (!localidad.isNullOrBlank())
+        ans = "$ans${if (ans.isNotBlank()) ", " else ""}$localidad"
+    if (!provincia.isNullOrBlank())
+        ans = "$ans${if (ans.isNotBlank()) ", " else ""}$provincia"
+    return ans
 }
 
 class InvalidClienteException(message: String) : Exception(message)

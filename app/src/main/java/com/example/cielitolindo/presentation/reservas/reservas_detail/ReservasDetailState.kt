@@ -1,13 +1,12 @@
-package com.example.cielitolindo.presentation.clientes.clientes_detail
+package com.example.cielitolindo.presentation.reservas.reservas_detail
 
-import com.example.cielitolindo.domain.model.Cliente
 import com.example.cielitolindo.domain.model.Reserva
 import com.example.cielitolindo.presentation.util.LoadingInfo
 
-data class ClientesDetailState(
+data class ReservasDetailState(
     val id: String = "",
-    val cliente: Cliente? = null,
-    val reservasOfCliente: List<Reserva> = listOf(),
+    val clienteName: String = "",
+    val reserva: Reserva? = null,
     val showDeleteConfirmationDialog: Boolean = false,
     val loadingInfo: LoadingInfo = LoadingInfo()
 )
