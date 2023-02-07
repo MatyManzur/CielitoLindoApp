@@ -14,13 +14,23 @@ class DeleteCliente(
     private val reservaRepository: ReservaRepository,
     private val firestoreRepository: FirestoreRepository
 ) {
-    suspend operator fun invoke(cliente: Cliente, onFirebaseSuccessListener: () -> Unit, onFirebaseFailureListener: (Exception) -> Unit) {
-        if(reservaRepository.getReservasFromCliente(cliente.id).firstOrNull()?.isNotEmpty() == true) {
+    suspend operator fun invoke(
+        cliente: Cliente,
+        onFirebaseSuccessListener: () -> Unit,
+        onFirebaseFailureListener: (Exception) -> Unit
+    ) {
+        if (reservaRepository.getReservasFromCliente(cliente.id).firstOrNull()
+                ?.isNotEmpty() == true
+        ) {
             throw IllegalStateException("No se puede eliminar un cliente mientras tenga reservas a su nombre!")
         }
         clienteRepository.deleteCliente(cliente)
         try {
-            firestoreRepository.deleteCliente(cliente, onFirebaseSuccessListener, onFirebaseFailureListener)
+            firestoreRepository.deleteCliente(
+                cliente,
+                onFirebaseSuccessListener,
+                onFirebaseFailureListener
+            )
         } catch (ex: Exception) {
             onFirebaseFailureListener(ex)
         }

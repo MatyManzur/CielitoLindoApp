@@ -8,11 +8,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class GastoRepositoryImplementation(private val gastoDao: GastoDao) : GastoRepository {
-    override fun getAllGastos(): Flow<List<Gasto>> {
-        return gastoDao.getAllGastos()
-    }
 
-    override suspend fun getGastosInRange(
+    override fun getGastosInRange(
         dateFrom: LocalDate,
         dateTo: LocalDate
     ): Flow<List<Gasto>> {
@@ -22,10 +19,6 @@ class GastoRepositoryImplementation(private val gastoDao: GastoDao) : GastoRepos
 
     override suspend fun getGastoById(id: String): Gasto? {
         return gastoDao.getGastoById(id)
-    }
-
-    override suspend fun getGastosFromCategoria(categoria: String): Flow<List<Gasto>> {
-        return gastoDao.getGastosFromCategoria(categoria)
     }
 
     override suspend fun insertGasto(gasto: Gasto) {

@@ -8,27 +8,21 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class CobroRepositoryImplementation(private val cobroDao: CobroDao) : CobroRepository {
-    override fun getAllCobros(): Flow<List<Cobro>> {
-        return cobroDao.getAllCobros()
-    }
 
-    override suspend fun getCobrosInRange(
-        dateFrom: LocalDate,
-        dateTo: LocalDate
-    ): Flow<List<Cobro>> {
+    override fun getCobrosByPaymentDate(dateFrom: LocalDate, dateTo: LocalDate): Flow<List<Cobro>> {
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        return cobroDao.getCobrosInRange(dateFrom.format(formatter), dateTo.format(formatter))
+        return cobroDao.getCobrosByPaymentDate(dateFrom.format(formatter), dateTo.format(formatter))
     }
 
     override suspend fun getCobroById(id: String): Cobro? {
         return cobroDao.getCobroById(id)
     }
 
-    override suspend fun getCobrosFromCliente(clienteId: String): Flow<List<Cobro>> {
-       return cobroDao.getCobrosFromCliente(clienteId)
+    override fun getCobrosFromCliente(clienteId: String): Flow<List<Cobro>> {
+        return cobroDao.getCobrosFromCliente(clienteId)
     }
 
-    override suspend fun getCobrosFromReserva(reservaId: String): Flow<List<Cobro>> {
+    override fun getCobrosFromReserva(reservaId: String): Flow<List<Cobro>> {
         return cobroDao.getCobrosFromReserva(reservaId)
     }
 

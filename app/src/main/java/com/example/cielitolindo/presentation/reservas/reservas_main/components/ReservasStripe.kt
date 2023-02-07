@@ -12,12 +12,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cielitolindo.domain.model.Reserva
+import com.example.cielitolindo.domain.model.getColor
 import com.example.cielitolindo.domain.model.getRangoDeFechasString
-import com.example.cielitolindo.presentation.util.colorVariation
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-
-
 
 @Composable
 fun ReservasStripe(
@@ -57,7 +55,7 @@ fun ReservasStripe(
                 modifier = Modifier
                     .height(stripeSize.height)
                     .weight(
-                        range.toFloat() + if (reserva.fechaIngreso.isBefore(firstDayOfWeek)) 0.5f else 0f + if (reserva.fechaEgreso.isAfter(
+                        range.toFloat() + (if (reserva.fechaIngreso.isBefore(firstDayOfWeek)) 0.5f else 0f) + if (reserva.fechaEgreso.isAfter(
                                 lastDayOfWeek
                             )
                         ) 0.5f.also { offsetForLastSpace = 0f } else 0f.also {
@@ -65,16 +63,11 @@ fun ReservasStripe(
                         }
                     ),
             ) {
-                val baseColor = reserva.casa.getFirstColor()
                 Button(
                     onClick = { onClickReserva(reserva) },
                     modifier = Modifier.fillMaxSize(),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = baseColor.copy(
-                            red = colorVariation(baseColor.red, reserva.id.hashCode(), 3),
-                            green = colorVariation(baseColor.green, reserva.id.hashCode(), 9),
-                            blue = colorVariation(baseColor.blue, reserva.id.hashCode(), 7)
-                        )
+                        backgroundColor = reserva.getColor()
                     )
                 ) {}
                 Row(

@@ -74,7 +74,7 @@ class Firestore {
     suspend fun getGastos(): List<Gasto> {
         val gastos = mutableListOf<Gasto>()
         db.collection("gasto").get().await().forEach { document ->
-            gastos.add(document.toObject())
+            gastos.add(document.toObject<FirestoreGasto>().toGasto())
         }
         return gastos
     }
@@ -84,7 +84,7 @@ class Firestore {
         onSuccessListener: () -> Unit,
         onFailureListener: (Exception) -> Unit
     ) {
-        db.collection("gasto").document(gasto.id).set(gasto)
+        db.collection("gasto").document(gasto.id).set(FirestoreGasto(gasto))
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
     }
@@ -102,7 +102,7 @@ class Firestore {
     suspend fun getCobros(): List<Cobro> {
         val cobros = mutableListOf<Cobro>()
         db.collection("cobro").get().await().forEach { document ->
-            cobros.add(document.toObject())
+            cobros.add(document.toObject<FirestoreCobro>().toCobro())
         }
         return cobros
     }
@@ -112,7 +112,7 @@ class Firestore {
         onSuccessListener: () -> Unit,
         onFailureListener: (Exception) -> Unit
     ) {
-        db.collection("cobro").document(cobro.id).set(cobro)
+        db.collection("cobro").document(cobro.id).set(FirestoreCobro(cobro))
             .addOnSuccessListener { onSuccessListener() }
             .addOnFailureListener(onFailureListener)
     }
@@ -211,4 +211,72 @@ data class FirestoreReserva(
     )
 
     constructor() : this("", "", "", "", "", 0f, "", null)
+}
+
+data class FirestoreCobro(
+    val id: String,
+    val clienteId: String,
+    val reservaId: String,
+    val fechaPago: String,
+    val modoPago: String?,
+    val descripcion: String?,
+    val importe: Float,
+    val moneda: String
+) {
+    fun toCobro(): Cobro {
+        return Cobro(
+            id = id,
+            clienteId = clienteId,
+            reservaId = reservaId,
+            fechaPago = LocalDate.parse(fechaPago, formatter),
+            modoPago = modoPago,
+            descripcion = descripcion,
+            importe = importe,
+            moneda = Moneda.valueOf(moneda)
+        )
+    }
+
+    constructor(cobro: Cobro) : this(
+        id = cobro.id,
+        clienteId = cobro.clienteId,
+        reservaId = cobro.reservaId,
+        fechaPago = cobro.fechaPago.format(formatter),
+        modoPago = cobro.modoPago,
+        descripcion = cobro.descripcion,
+        importe = cobro.importe,
+        moneda = cobro.moneda.name
+    )
+
+    constructor() : this("", "", "", "", null, null, 0f, "")
+}
+
+data class FirestoreGasto(
+    val id: String,
+    val fecha: String,
+    val descripcion: String,
+    val categoria: String?,
+    val importe: Float,
+    val moneda: String
+) {
+    fun toGasto(): Gasto {
+        return Gasto(
+            id = id,
+            fecha = LocalDate.parse(fecha, formatter),
+            descripcion = descripcion,
+            categoria = categoria,
+            importe = importe,
+            moneda = Moneda.valueOf(moneda)
+        )
+    }
+
+    constructor(gasto: Gasto) : this(
+        id = gasto.id,
+        fecha = gasto.fecha.format(formatter),
+        descripcion = gasto.descripcion,
+        categoria = gasto.categoria,
+        importe = gasto.importe,
+        moneda = gasto.moneda.name
+    )
+
+    constructor() : this("", "", "", null, 0f, "")
 }

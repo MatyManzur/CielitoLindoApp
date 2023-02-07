@@ -9,6 +9,8 @@ import com.example.cielitolindo.data.data_source.ReservaDatabase
 import com.example.cielitolindo.data.repository.*
 import com.example.cielitolindo.domain.repository.*
 import com.example.cielitolindo.domain.use_case.clientes.*
+import com.example.cielitolindo.domain.use_case.cobros.*
+import com.example.cielitolindo.domain.use_case.gastos.*
 import com.example.cielitolindo.domain.use_case.reservas.*
 import dagger.Module
 import dagger.Provides
@@ -114,17 +116,52 @@ object CielitoLindoModule {
     fun provideReservaUseCases(
         clienteRepository: ClienteRepository,
         reservaRepository: ReservaRepository,
+        cobroRepository: CobroRepository,
         firestoreRepository: FirestoreRepository
     ): ReservaUseCases {
         return ReservaUseCases(
             addReserva = AddReserva(reservaRepository, clienteRepository, firestoreRepository),
             countReservasOfCasaInRange = CountReservasOfCasaInRange(reservaRepository),
-            deleteReserva = DeleteReserva(reservaRepository, firestoreRepository),
+            deleteReserva = DeleteReserva(reservaRepository, cobroRepository, firestoreRepository),
             fetchReservas = FetchReservas(reservaRepository, firestoreRepository),
             getAllReservas = GetAllReservas(reservaRepository),
             getReserva = GetReserva(reservaRepository),
             getReservasFromCliente = GetReservasFromCliente(reservaRepository),
             getReservasInRange = GetReservasInRange(reservaRepository),
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideCobroUseCases(
+        cobroRepository: CobroRepository,
+        reservaRepository: ReservaRepository,
+        firestoreRepository: FirestoreRepository
+    ): CobroUseCases {
+        return CobroUseCases(
+            addCobro = AddCobro(cobroRepository, reservaRepository, firestoreRepository),
+            deleteCobro = DeleteCobro(cobroRepository, firestoreRepository),
+            fetchCobros = FetchCobros(cobroRepository, firestoreRepository),
+            getCobro = GetCobro(cobroRepository),
+            getCobrosFromReserva = GetCobrosFromReserva(cobroRepository),
+            getCobrosByPaymentDate = GetCobrosByPaymentDate(cobroRepository),
+            getCobrosByReservaDate = GetCobrosByReservaDate(cobroRepository, reservaRepository),
+            getCobrosFromCliente = GetCobrosFromCliente(cobroRepository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideGastoUseCases(
+        gastoRepository: GastoRepository,
+        firestoreRepository: FirestoreRepository
+    ): GastoUseCases {
+        return GastoUseCases(
+            addGasto = AddGasto(gastoRepository, firestoreRepository),
+            deleteGasto = DeleteGasto(gastoRepository, firestoreRepository),
+            fetchGastos = FetchGastos(gastoRepository, firestoreRepository),
+            getGasto = GetGasto(gastoRepository),
+            getGastosInRange = GetGastosInRange(gastoRepository),
         )
     }
 }
