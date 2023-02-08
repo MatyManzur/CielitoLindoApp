@@ -47,6 +47,17 @@ class ClientesDetailVM @Inject constructor(
         }
     }
 
+    suspend fun updateCliente() {
+        clienteUseCases.getCliente(state.value.id)?.also { cliente ->
+            _state.value = state.value.copy(
+                cliente = cliente
+            )
+        }
+        _state.value = state.value.copy(
+            reservasOfCliente = reservaUseCases.getReservasFromCliente(state.value.id).first()
+        )
+    }
+
     fun onEvent(event: ClientesDetailEvent) {
         when (event) {
             ClientesDetailEvent.OnDelete -> {

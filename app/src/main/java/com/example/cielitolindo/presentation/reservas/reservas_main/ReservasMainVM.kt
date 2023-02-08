@@ -36,14 +36,13 @@ class ReservasMainVM @Inject constructor(
         }
     }
 
+    suspend fun updateReservas() {
+        reservaUseCases.fetchReservas()
+        getReservasForMonthCasa(state.value.yearMonth, state.value.activeCasa)
+    }
+
     fun onEvent(event: ReservasEvent) {
         when (event) {
-            ReservasEvent.FetchReservas -> {
-                viewModelScope.launch {
-                    reservaUseCases.fetchReservas()
-                    getReservasForMonthCasa(state.value.yearMonth, state.value.activeCasa)
-                }
-            }
             ReservasEvent.NextMonth -> {
                 viewModelScope.launch {
                     reservaUseCases.fetchReservas()

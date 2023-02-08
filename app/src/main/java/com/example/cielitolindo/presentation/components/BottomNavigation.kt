@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 enum class BottomNavigationOptions(val title: String, val icon: ImageVector) {
     CLIENTES("Clientes", Icons.Filled.People),
     RESERVAS("Reservas", Icons.Filled.EventAvailable),
-    PAGOS("Pagos", Icons.Filled.Payments)
+    PAGOS("Finanzas", Icons.Filled.Payments)
 }
 
 @Composable

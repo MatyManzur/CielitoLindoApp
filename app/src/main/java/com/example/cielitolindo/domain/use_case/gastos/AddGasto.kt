@@ -15,9 +15,6 @@ class AddGasto(
         onFirebaseSuccessListener: () -> Unit,
         onFirebaseFailureListener: (Exception) -> Unit
     ) {
-        if(gasto.descripcion.isBlank()) {
-            throw InvalidGastoException("El gasto debe tener una descripción!")
-        }
         gastoRepository.insertGasto(gasto)
         try {
             firestoreRepository.setGasto(

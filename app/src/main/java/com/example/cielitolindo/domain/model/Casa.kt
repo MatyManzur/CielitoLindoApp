@@ -7,7 +7,7 @@ import com.example.cielitolindo.ui.theme.onTertiary
 import com.example.cielitolindo.ui.theme.tertiary
 import com.example.cielitolindo.ui.theme.tertiaryVariant
 
-enum class Casa(val stringName: String) {
+enum class Casa(val stringName: String): Element{
     CELESTE("Celeste"),
     NARANJA("Naranja"),
     VERDE("Verde");

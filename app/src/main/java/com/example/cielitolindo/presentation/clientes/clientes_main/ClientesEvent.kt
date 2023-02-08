@@ -6,5 +6,4 @@ import com.example.cielitolindo.domain.util.ClienteOrder
 sealed class ClientesEvent {
     data class Order(val clienteOrder: ClienteOrder) : ClientesEvent()
     object ToggleOrderSection : ClientesEvent()
-    object FetchClientes : ClientesEvent()
 }

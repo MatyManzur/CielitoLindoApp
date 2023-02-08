@@ -8,3 +8,5 @@ val Orange700 = Color(0xFFF57C00)
 val Orange800Light = Color(0xFFff9d3f)
 val LightGreen600Dark = Color(0xFF4B830D)
 val LightGreen600 = Color(0xFF7CB342)
+
+val Red800 = Color(0xFFC62828)

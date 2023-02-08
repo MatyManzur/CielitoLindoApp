@@ -6,42 +6,29 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NavigateBefore
 import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.cielitolindo.domain.model.Casa
-import com.example.cielitolindo.domain.model.Reserva
-import com.example.cielitolindo.presentation.util.MonthWeeks
-import java.time.LocalDate
-import java.time.Month
-import java.time.Year
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun MonthPicker(
+fun PeriodPicker(
     modifier: Modifier = Modifier,
-    currentMonth: YearMonth,
-    onPreviousMonth: () -> Unit,
-    onNextMonth: () -> Unit,
+    currentPeriod: String,
+    onPreviousPeriod: () -> Unit,
+    onNextPeriod: () -> Unit,
     color: Color = MaterialTheme.colors.onSurface,
     buttonsEnabled: Boolean,
 ) {
-    val formatter = DateTimeFormatter.ofPattern("MMMM yyyy")
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { onPreviousMonth() }, enabled = buttonsEnabled) {
+        IconButton(onClick = { onPreviousPeriod() }, enabled = buttonsEnabled) {
             Icon(
                 imageVector = Icons.Filled.NavigateBefore,
                 contentDescription = "Mes Anterior",
@@ -50,12 +37,12 @@ fun MonthPicker(
             )
         }
         Text(
-            text = currentMonth.format(formatter).uppercase(),
+            text = currentPeriod.uppercase(),
             style = MaterialTheme.typography.h5,
             color = color,
             fontWeight = FontWeight.Bold
         )
-        IconButton(onClick = { onNextMonth() }, enabled = buttonsEnabled) {
+        IconButton(onClick = { onNextPeriod() }, enabled = buttonsEnabled) {
             Icon(
                 imageVector = Icons.Filled.NavigateNext,
                 contentDescription = "Mes Siguiente",

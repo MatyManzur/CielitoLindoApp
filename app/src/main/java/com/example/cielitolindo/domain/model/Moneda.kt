@@ -1,6 +1,6 @@
 package com.example.cielitolindo.domain.model
 
-enum class Moneda(val stringName: String, val unitString: String, val decimalPlaces: Int) {
+enum class Moneda(val stringName: String, val unitString: String, val decimalPlaces: Int): Element{
     PESOS("Pesos", "AR$", 0),
     DOLARES("Dólares", "US$", 2);
 

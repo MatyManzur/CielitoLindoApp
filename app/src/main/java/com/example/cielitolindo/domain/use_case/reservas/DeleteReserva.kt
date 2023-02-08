@@ -1,12 +1,9 @@
 package com.example.cielitolindo.domain.use_case.reservas
 
-import com.example.cielitolindo.domain.model.Cliente
-import com.example.cielitolindo.domain.model.PendingOps
 import com.example.cielitolindo.domain.model.Reserva
 import com.example.cielitolindo.domain.repository.CobroRepository
 import com.example.cielitolindo.domain.repository.FirestoreRepository
 import com.example.cielitolindo.domain.repository.ReservaRepository
-import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.firstOrNull
 
 class DeleteReserva(

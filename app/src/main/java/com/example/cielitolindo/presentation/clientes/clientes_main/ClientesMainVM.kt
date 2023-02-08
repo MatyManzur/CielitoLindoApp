@@ -35,6 +35,11 @@ class ClientesMainVM @Inject constructor(
         }
     }
 
+    suspend fun updateClientes() {
+        clienteUseCases.fetchClientes()
+        getClientes(ClienteOrder.FechaInscripcion(OrderType.Descending))
+    }
+
     fun onEvent(event: ClientesEvent) {
         when (event) {
             is ClientesEvent.Order -> {
@@ -49,12 +54,6 @@ class ClientesMainVM @Inject constructor(
                 _state.value = state.value.copy(
                     isOrderSectionVisible = !state.value.isOrderSectionVisible
                 )
-            }
-            is ClientesEvent.FetchClientes -> {
-                viewModelScope.launch {
-                    clienteUseCases.fetchClientes()
-                    getClientes(ClienteOrder.FechaInscripcion(OrderType.Descending))
-                }
             }
         }
     }

@@ -12,7 +12,8 @@ class GetCobrosByReservaDate(private val cobroRepository: CobroRepository, priva
         val reservas = reservaRepository.getReservasInRange(dateFrom, dateTo).first()
         val ans: MutableList<Cobro> = mutableListOf()
         for (reserva in reservas) {
-            ans.addAll(cobroRepository.getCobrosFromReserva(reserva.id).first())
+            if(!reserva.fechaIngreso.isBefore(dateFrom)) //para que no se sumen dos veces las reservas que se extienden de un mes a otro
+                ans.addAll(cobroRepository.getCobrosFromReserva(reserva.id).first())
         }
         return ans
     }

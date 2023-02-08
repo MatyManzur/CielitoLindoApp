@@ -1,6 +1,8 @@
 package com.example.cielitolindo.presentation.reservas.reservas_detail
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,6 +20,7 @@ import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDe
 import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDetailVM
 import com.example.cielitolindo.presentation.clientes.clientes_detail.components.ReservaButton
 import com.example.cielitolindo.presentation.components.NameValueText
+import com.example.cielitolindo.presentation.components.Refreshable
 import com.example.cielitolindo.presentation.components.RoundedCornerIconButton
 import com.example.cielitolindo.presentation.util.LoadingState
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
@@ -101,38 +104,42 @@ fun ReservasDetailScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        if (state.reserva != null) {
-            Text(text = "Datos de la Reserva", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Medium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                NameValueText(fieldName = "Nombre del Cliente", fieldValue = state.clienteName, modifier = Modifier.weight(1f))
-                RoundedCornerIconButton(
-                    onClick = { onNavigateToClienteDetail(state.reserva.clienteId) },
-                    icon = Icons.Filled.PersonSearch,
-                    contentDescription = "Ver cliente",
-                    buttonSize = 36.dp,
-                    iconSize = 28.dp
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            NameValueText(fieldName = "Casa", fieldValue = state.reserva.casa.stringName)
-            Spacer(modifier = Modifier.height(8.dp))
-            NameValueText(fieldName = "Fechas de Ingreso y Egreso", fieldValue = state.reserva.getRangoDeFechasString("dd MMM yyyy"))
-            Spacer(modifier = Modifier.height(8.dp))
-            NameValueText(fieldName = "Importe Total", fieldValue = state.reserva.moneda.importeToString(state.reserva.importeTotal))
-            Spacer(modifier = Modifier.height(8.dp))
-            if(!state.reserva.observaciones.isNullOrBlank()) {
-                NameValueText(fieldName = "Observaciones", fieldValue = state.reserva.observaciones)
+    Refreshable(refreshFunction = viewModel::updateReserva) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            if (state.reserva != null) {
+                Text(text = "Datos de la Reserva", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Medium)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    NameValueText(fieldName = "Nombre del Cliente", fieldValue = state.clienteName, modifier = Modifier.weight(1f))
+                    RoundedCornerIconButton(
+                        onClick = { onNavigateToClienteDetail(state.reserva.clienteId) },
+                        icon = Icons.Filled.PersonSearch,
+                        contentDescription = "Ver cliente",
+                        buttonSize = 36.dp,
+                        iconSize = 28.dp
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                NameValueText(fieldName = "Casa", fieldValue = state.reserva.casa.stringName)
+                Spacer(modifier = Modifier.height(8.dp))
+                NameValueText(fieldName = "Fechas de Ingreso y Egreso", fieldValue = state.reserva.getRangoDeFechasString("dd MMM yyyy"))
+                Spacer(modifier = Modifier.height(8.dp))
+                NameValueText(fieldName = "Importe Total", fieldValue = state.reserva.moneda.importeToString(state.reserva.importeTotal))
+                Spacer(modifier = Modifier.height(8.dp))
+                if(!state.reserva.observaciones.isNullOrBlank()) {
+                    NameValueText(fieldName = "Observaciones", fieldValue = state.reserva.observaciones)
+                }
             }
         }
     }
+
     if (state.showDeleteConfirmationDialog) {
         AlertDialog(
             onDismissRequest = {

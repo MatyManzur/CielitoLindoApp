@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,6 +23,7 @@ import com.example.cielitolindo.presentation.clientes.clientes_main.components.C
 import com.example.cielitolindo.presentation.clientes.clientes_main.components.ExpandableSearchView
 import com.example.cielitolindo.presentation.components.BottomNav
 import com.example.cielitolindo.presentation.components.BottomNavigationOptions
+import com.example.cielitolindo.presentation.components.Refreshable
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
 
 @Composable
@@ -57,7 +60,11 @@ fun ClientesMainScreen(
                         onClick = { onNavigateToCreateCliente() },
                         backgroundColor = MaterialTheme.colors.secondary
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = "Add", tint = MaterialTheme.colors.onSecondary)
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = "Add",
+                            tint = MaterialTheme.colors.onSecondary
+                        )
                     }
                 },
                 topBar = {
@@ -98,43 +105,53 @@ fun ClientesMainScreen(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        AnimatedVisibility(
-            visible = state.isOrderSectionVisible,
-            enter = fadeIn().plus(slideInVertically()),
-            exit = fadeOut().plus(slideOutVertically())
+    Refreshable(refreshFunction = viewModel::updateClientes) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
         ) {
-            ClienteOrderSection(
+            AnimatedVisibility(
+                visible = state.isOrderSectionVisible,
+                enter = fadeIn().plus(slideInVertically()),
+                exit = fadeOut().plus(slideOutVertically())
+            ) {
+                ClienteOrderSection(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    clienteOrder = state.clientesOrder,
+                    onOrderChange = { order ->
+                        viewModel.onEvent(ClientesEvent.Order(order))
+                    }
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                clienteOrder = state.clientesOrder,
-                onOrderChange = { order ->
-                    viewModel.onEvent(ClientesEvent.Order(order))
-                }
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(state.clientes) { cliente ->
-                if (!isSearching || cliente.getNombreCompleto().contains(search, true)) {
-                    ClienteItem(
-                        cliente = cliente,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onNavigateToClienteDetail(cliente.id)
-                            },
-                        reservasOfCliente = state.reservasOfClientes.getOrDefault(cliente.id, listOf()),
-                        onNavigateToReservaDetail = onNavigateToReservaDetail
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                state.clientes.forEach { cliente ->
+                    if (!isSearching || cliente.getNombreCompleto().contains(search, true)) {
+                        ClienteItem(
+                            cliente = cliente,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onNavigateToClienteDetail(cliente.id)
+                                },
+                            reservasOfCliente = state.reservasOfClientes.getOrDefault(
+                                cliente.id,
+                                listOf()
+                            ),
+                            onNavigateToReservaDetail = onNavigateToReservaDetail
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }
     }
+
 
 }

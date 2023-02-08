@@ -2,7 +2,6 @@ package com.example.cielitolindo.domain.use_case.clientes
 
 import com.example.cielitolindo.domain.model.Cliente
 import com.example.cielitolindo.domain.model.InvalidClienteException
-import com.example.cielitolindo.domain.model.PendingOps
 import com.example.cielitolindo.domain.repository.ClienteRepository
 import com.example.cielitolindo.domain.repository.FirestoreRepository
 

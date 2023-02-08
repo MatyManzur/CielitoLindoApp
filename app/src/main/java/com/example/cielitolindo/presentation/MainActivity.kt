@@ -1,5 +1,6 @@
 package com.example.cielitolindo.presentation
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +20,7 @@ import androidx.navigation.navArgument
 import com.example.cielitolindo.presentation.clientes.clientes_add_edit.ClientesAddEditScreen
 import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDetailScreen
 import com.example.cielitolindo.presentation.clientes.clientes_main.ClientesMainScreen
+import com.example.cielitolindo.presentation.pagos.pagos_main.PagosMainScreen
 import com.example.cielitolindo.presentation.reservas.reservas_add_edit.ReservasAddEditScreen
 import com.example.cielitolindo.presentation.reservas.reservas_detail.ReservasDetailScreen
 import com.example.cielitolindo.presentation.reservas.reservas_main.ReservasMainScreen
@@ -79,7 +81,7 @@ class MainActivity : AppCompatActivity() {
                                         navController.navigate(Screen.ReservasMainScreen.route)
                                     },
                                     onNavigateToPagos = {
-                                        //TODO
+                                        navController.navigate(Screen.PagosMainScreen.route)
                                     },
                                 )
                             }
@@ -171,7 +173,7 @@ class MainActivity : AppCompatActivity() {
                                         navController.navigate(Screen.ClientesMainScreen.route)
                                     },
                                     onNavigateToPagos = {
-                                        //TODO
+                                        navController.navigate(Screen.PagosMainScreen.route)
                                     },
                                 )
                             }
@@ -238,6 +240,40 @@ class MainActivity : AppCompatActivity() {
                                     onNavigateToClienteDetail = { clienteId ->
                                         navController.navigate(Screen.ClientesDetailScreen.route + "?clienteId=$clienteId")
                                     }
+                                )
+                            }
+                            composable(
+                                route = Screen.PagosMainScreen.route
+                            ) {
+                                PagosMainScreen(
+                                    onComposing = {
+                                        scaffoldElementsState = it
+                                    },
+                                    onShowSnackbar = { message, actionLabel, duration ->
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                message,
+                                                actionLabel,
+                                                duration
+                                            )
+                                        }
+                                    },
+                                    onNavigateToCreateGasto = {
+                                        //TODO
+                                    },
+                                    onNavigateToCobroDetail = { cobroId ->
+                                        //TODO
+                                    },
+                                    onNavigateToGastoDetail = { gastoId ->
+                                        //TODO
+                                    },
+                                    onNavigateToClientes = {
+                                        navController.navigate(Screen.ClientesMainScreen.route)
+                                    },
+                                    onNavigateToReservas = {
+                                        navController.navigate(Screen.ReservasMainScreen.route)
+                                    },
+                                    sharedPreferences = getSharedPreferences("SETTINGS", Context.MODE_PRIVATE)
                                 )
                             }
                         }

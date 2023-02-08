@@ -1,13 +1,10 @@
 package com.example.cielitolindo.domain.use_case.clientes
 
 import com.example.cielitolindo.domain.model.Cliente
-import com.example.cielitolindo.domain.model.PendingOps
 import com.example.cielitolindo.domain.repository.ClienteRepository
 import com.example.cielitolindo.domain.repository.FirestoreRepository
 import com.example.cielitolindo.domain.repository.ReservaRepository
-import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.onEmpty
 
 class DeleteCliente(
     private val clienteRepository: ClienteRepository,

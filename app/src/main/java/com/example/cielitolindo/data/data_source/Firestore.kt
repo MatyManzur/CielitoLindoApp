@@ -253,8 +253,8 @@ data class FirestoreCobro(
 data class FirestoreGasto(
     val id: String,
     val fecha: String,
-    val descripcion: String,
-    val categoria: String?,
+    val descripcion: String?,
+    val categoria: String,
     val importe: Float,
     val moneda: String
 ) {
@@ -263,7 +263,7 @@ data class FirestoreGasto(
             id = id,
             fecha = LocalDate.parse(fecha, formatter),
             descripcion = descripcion,
-            categoria = categoria,
+            categoria = Categoria.valueOf(categoria),
             importe = importe,
             moneda = Moneda.valueOf(moneda)
         )
@@ -273,10 +273,10 @@ data class FirestoreGasto(
         id = gasto.id,
         fecha = gasto.fecha.format(formatter),
         descripcion = gasto.descripcion,
-        categoria = gasto.categoria,
+        categoria = gasto.categoria.name,
         importe = gasto.importe,
         moneda = gasto.moneda.name
     )
 
-    constructor() : this("", "", "", null, 0f, "")
+    constructor() : this("", "", null, "", 0f, "")
 }

@@ -8,8 +8,8 @@ import java.time.LocalDate
 data class Gasto(
     @PrimaryKey val id: String,
     val fecha: LocalDate,
-    val descripcion: String,
-    val categoria: String?,
+    val descripcion: String?,
+    val categoria: Categoria,
     val importe: Float,
     val moneda: Moneda
 ) : Element
