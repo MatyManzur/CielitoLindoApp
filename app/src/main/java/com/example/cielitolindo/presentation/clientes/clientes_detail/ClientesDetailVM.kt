@@ -37,12 +37,10 @@ class ClientesDetailVM @Inject constructor(
                 clienteUseCases.getCliente(id)?.also { cliente ->
                     _state.value = state.value.copy(
                         id = id,
-                        cliente = cliente
+                        cliente = cliente,
+                        reservasOfCliente = reservaUseCases.getReservasFromCliente(id).first()
                     )
                 }
-                _state.value = state.value.copy(
-                    reservasOfCliente = reservaUseCases.getReservasFromCliente(id).first()
-                )
             }
         }
     }

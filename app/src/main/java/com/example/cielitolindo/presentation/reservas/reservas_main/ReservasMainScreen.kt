@@ -16,6 +16,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cielitolindo.domain.model.Casa
 import com.example.cielitolindo.presentation.components.BottomNav
 import com.example.cielitolindo.presentation.components.BottomNavigationOptions
+import com.example.cielitolindo.presentation.components.LoadingDependingContent
 import com.example.cielitolindo.presentation.components.Refreshable
 import com.example.cielitolindo.presentation.reservas.reservas_main.components.*
 import com.example.cielitolindo.presentation.util.LoadingState
@@ -30,7 +31,7 @@ fun ReservasMainScreen(
         String?,
         SnackbarDuration
     ) -> Unit,
-    onNavigateToCreateReserva: () -> Unit,
+    onNavigateToCreateReserva: (String?) -> Unit,
     onNavigateToReservaDetail: (String) -> Unit,
     onNavigateToClientes: () -> Unit,
     onNavigateToPagos: () -> Unit,
@@ -43,7 +44,7 @@ fun ReservasMainScreen(
             ScaffoldElementsState(
                 floatingActionButton = {
                     FloatingActionButton(
-                        onClick = { onNavigateToCreateReserva() },
+                        onClick = { onNavigateToCreateReserva(state.activeCasa?.name) },
                         backgroundColor = state.activeCasa?.getSecondColor()
                             ?: MaterialTheme.colors.secondary
                     ) {
@@ -94,86 +95,89 @@ fun ReservasMainScreen(
     }
 
     Refreshable(refreshFunction = viewModel::updateReservas) {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())) {
-            PeriodPicker(
-                currentPeriod = state.yearMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
-                onPreviousPeriod = { viewModel.onEvent(ReservasEvent.PreviousMonth) },
-                onNextPeriod = { viewModel.onEvent(ReservasEvent.NextMonth) },
-                modifier = Modifier.padding(8.dp),
-                buttonsEnabled = state.loadingInfo.loadingState == LoadingState.READY
-            )
-            Box(
+        PeriodPicker(
+            currentPeriod = state.yearMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+            onPreviousPeriod = { viewModel.onEvent(ReservasEvent.PreviousMonth) },
+            onNextPeriod = { viewModel.onEvent(ReservasEvent.NextMonth) },
+            modifier = Modifier.padding(8.dp),
+            buttonsEnabled = state.loadingInfo.loadingState == LoadingState.READY
+        )
+        LoadingDependingContent(loadingInfo = state.loadingInfo) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(IntrinsicSize.Max)
+                    .verticalScroll(rememberScrollState())
             ) {
-                val horizontalPadding: Dp = 2.dp
-                Column {
-                    WeekdaysLabels(modifier = Modifier.padding(horizontal = horizontalPadding))
-                    Divider()
-                    for ((i, week) in state.weeks.withIndex()) {
-                        DaysNumberLabels(
-                            startingDay = week.first(),
-                            modifier = Modifier.padding(horizontal = horizontalPadding),
-                            month = state.yearMonth.month,
-                            todayColor = state.activeCasa?.getSecondColor()
-                                ?: MaterialTheme.colors.secondary
-                        )
-                        when (state.activeCasa) {
-                            null -> {
-                                for (c in Casa.values()) {
-                                    val reservasWeekOfCasa =
-                                        state.reservasWeeks[i].filter { r -> r.reserva.casa == c }
-                                    val onColor = c.getOnColor()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Max)
+                ) {
+                    val horizontalPadding: Dp = 2.dp
+                    Column {
+                        WeekdaysLabels(modifier = Modifier.padding(horizontal = horizontalPadding))
+                        Divider()
+                        for ((i, week) in state.weeks.withIndex()) {
+                            DaysNumberLabels(
+                                startingDay = week.first(),
+                                modifier = Modifier.padding(horizontal = horizontalPadding),
+                                month = state.yearMonth.month,
+                                todayColor = state.activeCasa?.getSecondColor()
+                                    ?: MaterialTheme.colors.secondary
+                            )
+                            when (state.activeCasa) {
+                                null -> {
+                                    for (c in Casa.values()) {
+                                        val reservasWeekOfCasa =
+                                            state.reservasWeeks[i].filter { r -> r.reserva.casa == c }
+                                        val onColor = c.getOnColor()
+                                        ReservasStripe(
+                                            onClickReserva = { onNavigateToReservaDetail(it.id) },
+                                            getClienteNameAtIndex = { reservasWeekOfCasa[it].clienteName },
+                                            onColor = onColor,
+                                            reservas = reservasWeekOfCasa.map { ri -> ri.reserva },
+                                            firstDayOfWeek = week.first(),
+                                            stripeSize = StripeSize.SINGLE_LINE
+                                        )
+                                    }
+                                }
+                                else -> {
+                                    val reservasWeek = state.reservasWeeks[i]
+                                    val onColor = state.activeCasa.getOnColor()
                                     ReservasStripe(
                                         onClickReserva = { onNavigateToReservaDetail(it.id) },
-                                        getClienteNameAtIndex = { reservasWeekOfCasa[it].clienteName },
+                                        getClienteNameAtIndex = { reservasWeek[it].clienteName },
                                         onColor = onColor,
-                                        reservas = reservasWeekOfCasa.map { ri -> ri.reserva },
+                                        reservas = reservasWeek.map { ri -> ri.reserva },
                                         firstDayOfWeek = week.first(),
-                                        stripeSize = StripeSize.SINGLE_LINE
+                                        stripeSize = StripeSize.EXPANDED
                                     )
                                 }
                             }
-                            else -> {
-                                val reservasWeek = state.reservasWeeks[i]
-                                val onColor = state.activeCasa.getOnColor()
-                                ReservasStripe(
-                                    onClickReserva = { onNavigateToReservaDetail(it.id) },
-                                    getClienteNameAtIndex = { reservasWeek[it].clienteName },
-                                    onColor = onColor,
-                                    reservas = reservasWeek.map { ri -> ri.reserva },
-                                    firstDayOfWeek = week.first(),
-                                    stripeSize = StripeSize.EXPANDED
-                                )
-                            }
+                            Divider()
                         }
-                        Divider()
                     }
-                }
-                //Líneas verticales
-                Row(
-                    modifier = Modifier.padding(horizontal = horizontalPadding),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Divider(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(1.dp)
-                    )
-                    for (i in 1..7) {
-                        Spacer(modifier = Modifier.weight(1f))
+                    //Líneas verticales
+                    Row(
+                        modifier = Modifier.padding(horizontal = horizontalPadding),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         Divider(
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .width(1.dp)
                         )
+                        for (i in 1..7) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            Divider(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .width(1.dp)
+                            )
+                        }
                     }
                 }
             }
         }
     }
-
 }

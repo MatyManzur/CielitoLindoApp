@@ -8,15 +8,14 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.cielitolindo.domain.model.Cliente
-import com.example.cielitolindo.domain.model.Reserva
-import com.example.cielitolindo.domain.model.getDireccionCompleta
-import com.example.cielitolindo.domain.model.getNombreCompleto
+import com.example.cielitolindo.domain.model.*
 import com.example.cielitolindo.presentation.clientes.clientes_detail.components.ReservaButton
+import com.example.cielitolindo.ui.theme.tertiary
 import java.time.LocalDate
 
 @Composable
@@ -25,6 +24,7 @@ fun ClienteItem(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 8.dp,
     reservasOfCliente: List<Reserva>,
+    saldoPendiente: Map<Moneda, Float>,
     onNavigateToReservaDetail: (String) -> Unit,
 ) {
     Surface(
@@ -110,6 +110,17 @@ fun ClienteItem(
                         text = "Saldo Pendiente:",
                         style = MaterialTheme.typography.body2
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    var first = true
+                    for (saldo in saldoPendiente) {
+                        Text(
+                            text = (if(first) "" else "+ ") + saldo.key.importeToString(saldo.value),
+                            style = MaterialTheme.typography.body1,
+                            fontWeight = FontWeight.Medium,
+                            color = if (saldo.value > 0.01f) MaterialTheme.colors.error else MaterialTheme.colors.tertiary,
+                        )
+                        first = false
+                    }
                 }
             }
         }

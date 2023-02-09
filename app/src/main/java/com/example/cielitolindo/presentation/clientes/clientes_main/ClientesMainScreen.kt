@@ -23,6 +23,7 @@ import com.example.cielitolindo.presentation.clientes.clientes_main.components.C
 import com.example.cielitolindo.presentation.clientes.clientes_main.components.ExpandableSearchView
 import com.example.cielitolindo.presentation.components.BottomNav
 import com.example.cielitolindo.presentation.components.BottomNavigationOptions
+import com.example.cielitolindo.presentation.components.LoadingDependingContent
 import com.example.cielitolindo.presentation.components.Refreshable
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
 
@@ -106,47 +107,50 @@ fun ClientesMainScreen(
     }
 
     Refreshable(refreshFunction = viewModel::updateClientes) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            AnimatedVisibility(
-                visible = state.isOrderSectionVisible,
-                enter = fadeIn().plus(slideInVertically()),
-                exit = fadeOut().plus(slideOutVertically())
-            ) {
-                ClienteOrderSection(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    clienteOrder = state.clientesOrder,
-                    onOrderChange = { order ->
-                        viewModel.onEvent(ClientesEvent.Order(order))
-                    }
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
+        LoadingDependingContent(loadingInfo = state.loadingInfo) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
             ) {
-                state.clientes.forEach { cliente ->
-                    if (!isSearching || cliente.getNombreCompleto().contains(search, true)) {
-                        ClienteItem(
-                            cliente = cliente,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onNavigateToClienteDetail(cliente.id)
-                                },
-                            reservasOfCliente = state.reservasOfClientes.getOrDefault(
-                                cliente.id,
-                                listOf()
-                            ),
-                            onNavigateToReservaDetail = onNavigateToReservaDetail
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+                AnimatedVisibility(
+                    visible = state.isOrderSectionVisible,
+                    enter = fadeIn().plus(slideInVertically()),
+                    exit = fadeOut().plus(slideOutVertically())
+                ) {
+                    ClienteOrderSection(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        clienteOrder = state.clientesOrder,
+                        onOrderChange = { order ->
+                            viewModel.onEvent(ClientesEvent.Order(order))
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    state.clientes.forEach { cliente ->
+                        if (!isSearching || cliente.getNombreCompleto().contains(search, true)) {
+                            ClienteItem(
+                                cliente = cliente,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onNavigateToClienteDetail(cliente.id)
+                                    },
+                                reservasOfCliente = state.reservasOfClientes.getOrDefault(
+                                    cliente.id,
+                                    listOf()
+                                ),
+                                onNavigateToReservaDetail = onNavigateToReservaDetail,
+                                saldoPendiente = state.saldosPendientesOfClientes.getOrDefault(cliente.id, mapOf())
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
                 }
             }

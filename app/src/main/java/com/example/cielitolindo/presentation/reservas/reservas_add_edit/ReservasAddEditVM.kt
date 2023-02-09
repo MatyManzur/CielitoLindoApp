@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cielitolindo.domain.model.Casa
 import com.example.cielitolindo.domain.model.Reserva
 import com.example.cielitolindo.domain.model.getNombreCompleto
 import com.example.cielitolindo.domain.use_case.clientes.ClienteUseCases
@@ -55,6 +56,9 @@ class ReservasAddEditVM @Inject constructor(
                     )
                 }
             }
+        }
+        savedStateHandle.get<String>("casa")?.let { casa ->
+            _state.value = state.value.copy(casa = Casa.valueOf(casa))
         }
         clienteUseCases.getClientes().onEach {
             _state.value = state.value.copy(

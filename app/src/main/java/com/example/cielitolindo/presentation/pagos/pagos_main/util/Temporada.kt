@@ -21,7 +21,7 @@ data class Temporada(val firstYear: Year) {
     constructor(yearMonth: YearMonth) : this(
         if (yearMonth.month.value >= Month.JULY.value) Year.of(
             yearMonth.year
-        ) else Year.of(yearMonth.plusYears(1).year)
+        ) else Year.of(yearMonth.minusYears(1).year)
     )
 
     override fun toString(): String {

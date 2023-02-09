@@ -47,6 +47,9 @@ class PagosMainVM @Inject constructor(
     }
 
     suspend fun updatePagos() {
+        _state.value = state.value.copy(
+            loadingInfo = LoadingInfo(LoadingState.LOADING)
+        )
         cobroUseCases.fetchCobros()
         gastoUseCases.fetchGastos()
         getCobros()
@@ -72,6 +75,9 @@ class PagosMainVM @Inject constructor(
             }
             PagosEvent.NextPeriod -> {
                 viewModelScope.launch {
+                    _state.value = state.value.copy(
+                        loadingInfo = LoadingInfo(LoadingState.LOADING)
+                    )
                     when (state.value.dateGroupCriteria) {
                         DateGroupCriteria.BY_MONTH -> {
                             _state.value = state.value.copy(
@@ -83,6 +89,9 @@ class PagosMainVM @Inject constructor(
                                 temporada = Temporada(state.value.temporada.firstYear.plusYears(1))
                             )
                         }
+                        DateGroupCriteria.CUSTOM -> {
+
+                        }
                     }
                     getCobros()
                     getGastos()
@@ -90,6 +99,9 @@ class PagosMainVM @Inject constructor(
             }
             PagosEvent.PreviousPeriod -> {
                 viewModelScope.launch {
+                    _state.value = state.value.copy(
+                        loadingInfo = LoadingInfo(LoadingState.LOADING)
+                    )
                     when (state.value.dateGroupCriteria) {
                         DateGroupCriteria.BY_MONTH -> {
                             _state.value = state.value.copy(
@@ -100,6 +112,9 @@ class PagosMainVM @Inject constructor(
                             _state.value = state.value.copy(
                                 temporada = Temporada(state.value.temporada.firstYear.minusYears(1))
                             )
+                        }
+                        DateGroupCriteria.CUSTOM -> {
+
                         }
                     }
                     getCobros()
@@ -125,6 +140,12 @@ class PagosMainVM @Inject constructor(
             is PagosEvent.SetDateDefinitionCriteria -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(
+                        loadingInfo = LoadingInfo(LoadingState.LOADING)
+                    )
+                    _state.value = state.value.copy(
+                        loadingInfo = LoadingInfo(LoadingState.LOADING)
+                    )
+                    _state.value = state.value.copy(
                         dateDefinitionCriteria = event.definitionCriteria
                     )
                     getCobros()
@@ -133,7 +154,22 @@ class PagosMainVM @Inject constructor(
             is PagosEvent.SetDateGroupCriteria -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(
+                        loadingInfo = LoadingInfo(LoadingState.LOADING)
+                    )
+                    _state.value = state.value.copy(
                         dateGroupCriteria = event.groupCriteria
+                    )
+                    getCobros()
+                    getGastos()
+                }
+            }
+            is PagosEvent.SetCustomPeriod -> {
+                viewModelScope.launch {
+                    _state.value = state.value.copy(
+                        loadingInfo = LoadingInfo(LoadingState.LOADING)
+                    )
+                    _state.value = state.value.copy(
+                        customPeriod = event.customPeriod
                     )
                     getCobros()
                     getGastos()

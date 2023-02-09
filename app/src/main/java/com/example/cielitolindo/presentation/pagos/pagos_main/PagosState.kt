@@ -16,7 +16,8 @@ import java.time.format.DateTimeFormatter
 
 data class PagosState(
     val yearMonth: YearMonth = YearMonth.now(),
-    val temporada: Temporada = Temporada(Year.now()),
+    val temporada: Temporada = Temporada(YearMonth.now()),
+    val customPeriod: Pair<LocalDate, LocalDate> = Pair(LocalDate.now().minusMonths(3), LocalDate.now()),
     val cobros: Map<Casa, List<PagoInfo>> = mapOf(),
     val gastos: Map<Categoria, List<PagoInfo>> = mapOf(),
     val dateGroupCriteria: DateGroupCriteria = DateGroupCriteria.BY_MONTH,
@@ -30,13 +31,17 @@ data class PagosState(
         return when (dateGroupCriteria) {
             DateGroupCriteria.BY_MONTH -> Pair(yearMonth.atDay(1), yearMonth.atEndOfMonth())
             DateGroupCriteria.BY_TEMPORADA -> Pair(temporada.firstDay, temporada.lastDay)
+            DateGroupCriteria.CUSTOM -> customPeriod
         }
     }
+
+    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yy")
 
     fun getPeriodString(): String {
         return when (dateGroupCriteria) {
             DateGroupCriteria.BY_MONTH -> yearMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
             DateGroupCriteria.BY_TEMPORADA -> temporada.toString()
+            DateGroupCriteria.CUSTOM -> "${customPeriod.first.format(formatter)} -> ${customPeriod.second.format(formatter)}"
         }
     }
 

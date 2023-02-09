@@ -163,8 +163,8 @@ class MainActivity : AppCompatActivity() {
                                             )
                                         }
                                     },
-                                    onNavigateToCreateReserva = {
-                                        navController.navigate(Screen.ReservasAddEditScreen.route)
+                                    onNavigateToCreateReserva = { casa ->
+                                        navController.navigate(Screen.ReservasAddEditScreen.route + if(casa != null) "?casa=$casa" else "")
                                     },
                                     onNavigateToReservaDetail = { reservaId ->
                                         navController.navigate(Screen.ReservasDetailScreen.route + "?reservaId=$reservaId")
@@ -178,13 +178,19 @@ class MainActivity : AppCompatActivity() {
                                 )
                             }
                             composable(
-                                route = Screen.ReservasAddEditScreen.route + "?reservaId={reservaId}",
+                                route = Screen.ReservasAddEditScreen.route + "?reservaId={reservaId}&casa={casa}",
                                 arguments = listOf(
                                     navArgument(
                                         name = "reservaId"
                                     ) {
                                         type = NavType.StringType
                                         defaultValue = ""
+                                    },
+                                    navArgument(
+                                        name = "casa"
+                                    ) {
+                                        type = NavType.StringType
+                                        nullable = true
                                     }
                                 )
                             ) {
