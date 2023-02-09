@@ -1,4 +1,4 @@
-package com.example.cielitolindo.presentation.reservas.reservas_detail
+package com.example.cielitolindo.presentation.pagos.cobros_detail
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,24 +8,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.cielitolindo.domain.model.Moneda
+import com.example.cielitolindo.domain.model.getNombreCompleto
 import com.example.cielitolindo.domain.model.getRangoDeFechasString
 import com.example.cielitolindo.presentation.components.NameValueText
 import com.example.cielitolindo.presentation.components.Refreshable
 import com.example.cielitolindo.presentation.components.RoundedCornerIconButton
-import com.example.cielitolindo.presentation.pagos.pagos_main.components.PagoInfoDetail
-import com.example.cielitolindo.presentation.pagos.pagos_main.util.PagoInfo
 import com.example.cielitolindo.presentation.util.LoadingState
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
-import com.example.cielitolindo.ui.theme.tertiary
 import kotlinx.coroutines.flow.collectLatest
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun ReservasDetailScreen(
+fun CobrosDetailScreen(
     onComposing: (ScaffoldElementsState) -> Unit,
     onShowSnackbar: (
         message: String,
@@ -33,13 +32,13 @@ fun ReservasDetailScreen(
         duration: SnackbarDuration
     ) -> Unit,
     onNavigateUp: () -> Unit,
-    onNavigateToEditReserva: (String) -> Unit,
+    onNavigateToEditCobro: (String) -> Unit,
+    onNavigateToReservaDetail: (String) -> Unit,
     onNavigateToClienteDetail: (String) -> Unit,
-    onNavigateToCreateCobro: (String) -> Unit,
-    onNavigateToCobroDetail: (String) -> Unit,
-    viewModel: ReservasDetailVM = hiltViewModel()
+    viewModel: CobrosDetailVM = hiltViewModel()
 ) {
     val state = viewModel.state.value
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     LaunchedEffect(key1 = true) {
         onComposing(
@@ -47,13 +46,13 @@ fun ReservasDetailScreen(
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = {
-                            viewModel.onEvent(ReservasDetailEvent.OnEdit)
+                            viewModel.onEvent(CobrosDetailEvent.OnEdit)
                         },
                         backgroundColor = MaterialTheme.colors.secondary
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Edit,
-                            contentDescription = "Editar Reserva",
+                            contentDescription = "Editar Cobro",
                             tint = MaterialTheme.colors.onSecondary
                         )
                     }
@@ -62,7 +61,7 @@ fun ReservasDetailScreen(
                     TopAppBar(
                         title = {
                             Text(
-                                text = "Detalle de Reserva",
+                                text = "Detalle de Cobro",
                                 color = MaterialTheme.colors.onPrimary
                             )
                         },
@@ -76,10 +75,10 @@ fun ReservasDetailScreen(
                             }
                         },
                         actions = {
-                            IconButton(onClick = { viewModel.onEvent(ReservasDetailEvent.OnShowDeleteConfirmationDialog) }) {
+                            IconButton(onClick = { viewModel.onEvent(CobrosDetailEvent.OnShowDeleteConfirmationDialog) }) {
                                 Icon(
                                     imageVector = Icons.Filled.Delete,
-                                    contentDescription = "Eliminar Reserva",
+                                    contentDescription = "Eliminar Cobro",
                                     tint = MaterialTheme.colors.onPrimary
                                 )
                             }
@@ -91,33 +90,33 @@ fun ReservasDetailScreen(
         )
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is ReservasDetailVM.UiEvent.EditReserva -> {
-                    onNavigateToEditReserva(event.reservaId)
+                is CobrosDetailVM.UiEvent.EditCobro -> {
+                    onNavigateToEditCobro(event.cobroId)
                 }
-                ReservasDetailVM.UiEvent.Exit -> {
+                CobrosDetailVM.UiEvent.Exit -> {
                     onNavigateUp()
                 }
-                is ReservasDetailVM.UiEvent.ShowSnackbar -> {
+                is CobrosDetailVM.UiEvent.ShowSnackbar -> {
                     onShowSnackbar(event.message, null, SnackbarDuration.Short)
                 }
             }
         }
     }
 
-    Refreshable(refreshFunction = viewModel::updateReserva) {
+    Refreshable(refreshFunction = viewModel::updateCobro) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            if (state.reserva != null) {
+            if (state.cobro != null) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "Datos de la Reserva",
+                        text = "Datos del cobro",
                         style = MaterialTheme.typography.h5,
                         fontWeight = FontWeight.Medium
                     )
@@ -127,11 +126,11 @@ fun ReservasDetailScreen(
                     ) {
                         NameValueText(
                             fieldName = "Nombre del Cliente",
-                            fieldValue = state.clienteName,
+                            fieldValue = state.cliente?.getNombreCompleto() ?: "",
                             modifier = Modifier.weight(1f)
                         )
                         RoundedCornerIconButton(
-                            onClick = { onNavigateToClienteDetail(state.reserva.clienteId) },
+                            onClick = { onNavigateToClienteDetail(state.cliente?.id ?: "") },
                             icon = Icons.Filled.PersonSearch,
                             contentDescription = "Ver cliente",
                             buttonSize = 36.dp,
@@ -139,77 +138,61 @@ fun ReservasDetailScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    NameValueText(fieldName = "Casa", fieldValue = state.reserva.casa.stringName)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    NameValueText(
-                        fieldName = "Fechas de Ingreso y Egreso",
-                        fieldValue = state.reserva.getRangoDeFechasString("dd MMM yyyy")
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    if (!state.reserva.observaciones.isNullOrBlank()) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         NameValueText(
-                            fieldName = "Observaciones",
-                            fieldValue = state.reserva.observaciones
+                            fieldName = "Reserva",
+                            fieldValue = "Casa ${state.reserva?.casa?.stringName ?: ""}: ${state.reserva?.getRangoDeFechasString("dd/MM/yy")}",
+                            modifier = Modifier.weight(1f)
+                        )
+                        RoundedCornerIconButton(
+                            onClick = { onNavigateToReservaDetail(state.reserva?.id ?: "") },
+                            icon = Icons.Filled.Event,
+                            contentDescription = "Ver Reserva",
+                            buttonSize = 36.dp,
+                            iconSize = 28.dp
                         )
                     }
-                }
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp)
-                )
-                PagoInfoDetail(
-                    pagoInfo = PagoInfo(
-                        descripcion = "Importe Total",
-                        importes = mapOf(Pair(state.reserva.moneda, state.reserva.importeTotal))
-                    ),
-                    importesColor = MaterialTheme.colors.onSurface,
-                )
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-                for (cobro in state.cobros) {
-                    val map = mutableMapOf<Moneda, Float>()
-                    map[cobro.moneda] = cobro.importe
-                    if (cobro.moneda != state.reserva.moneda)
-                        map[state.reserva.moneda] = cobro.enConceptoDe ?: 0f
-                    PagoInfoDetail(
-                        pagoInfo = PagoInfo(
-                            descripcion = if (cobro.modoPago.isNullOrBlank()) "Cobro" else cobro.modoPago,
-                            importes = map
-                        ),
-                        importesColor = MaterialTheme.colors.onSurface,
-                        onPostpendIconClick = { onNavigateToCobroDetail(cobro.id) },
-                        postpendIconColor = MaterialTheme.colors.onSurface,
-                        connectingImportes = if (state.reserva.moneda == Moneda.PESOS) "<" else ">"
+                    Spacer(modifier = Modifier.height(8.dp))
+                    NameValueText(
+                        fieldName = "Fecha de Cobro",
+                        fieldValue = state.cobro.fechaPago.format(formatter)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (!state.cobro.descripcion.isNullOrBlank()) {
+                        NameValueText(
+                            fieldName = "Descripcion",
+                            fieldValue = state.cobro.descripcion
+                        )
+                    }
+                    Divider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp)
+                    )
+                    if (!state.cobro.modoPago.isNullOrBlank()) {
+                        NameValueText(
+                            fieldName = "Modo de Pago",
+                            fieldValue = state.cobro.modoPago
+                        )
+                    }
+                    NameValueText(
+                        fieldName = "Importe",
+                        fieldValue = state.cobro.moneda.importeToString(state.cobro.importe)
+                    )
+                    if(state.cobro.enConceptoDe != null && state.reserva != null) {
+                        NameValueText(
+                            fieldName = "En Concepto de",
+                            fieldValue = state.reserva.moneda.importeToString(state.cobro.enConceptoDe)
+                        )
+                    }
+                    Divider(
+                        modifier = Modifier
+                            .fillMaxWidth()
                     )
                 }
-                PagoInfoDetail(
-                    pagoInfo = PagoInfo(
-                        descripcion = "AGREGAR COBRO",
-                        importes = mapOf(),
-                    ),
-                    onPostpendIconClick = { onNavigateToCreateCobro(state.id) },
-                    postpendIconColor = MaterialTheme.colors.tertiary,
-                    importesColor = MaterialTheme.colors.tertiary,
-                    postpendIcon = Icons.Filled.AddCircle,
-                    dividerAtEnd = true,
-                    noImportes = true
-                )
-                val saldoPendiente = state.getSaldoPendiente()
-                PagoInfoDetail(
-                    pagoInfo = PagoInfo(
-                        descripcion = "Saldo Pendiente",
-                        importes = mapOf(Pair(state.reserva.moneda, saldoPendiente))
-                    ),
-                    importesColor = if (saldoPendiente > 0.01f) MaterialTheme.colors.error else MaterialTheme.colors.tertiary,
-                )
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -217,10 +200,10 @@ fun ReservasDetailScreen(
     if (state.showDeleteConfirmationDialog) {
         AlertDialog(
             onDismissRequest = {
-                viewModel.onEvent(ReservasDetailEvent.OnHideDeleteConfirmationDialog)
+                viewModel.onEvent(CobrosDetailEvent.OnHideDeleteConfirmationDialog)
             },
             title = {
-                Text(text = "¿Está seguro que desea eliminar la reserva?")
+                Text(text = "¿Está seguro que desea eliminar el cobro?")
             },
             text = {
                 Text(text = "Esta acción no se puede deshacer.")
@@ -228,7 +211,7 @@ fun ReservasDetailScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.onEvent(ReservasDetailEvent.OnDelete)
+                        viewModel.onEvent(CobrosDetailEvent.OnDelete)
                     }
                 ) {
                     if (state.loadingInfo.loadingState == LoadingState.READY) {
@@ -245,7 +228,7 @@ fun ReservasDetailScreen(
             dismissButton = {
                 Button(
                     onClick = {
-                        viewModel.onEvent(ReservasDetailEvent.OnHideDeleteConfirmationDialog)
+                        viewModel.onEvent(CobrosDetailEvent.OnHideDeleteConfirmationDialog)
                     }
                 ) {
                     Text(text = "No")

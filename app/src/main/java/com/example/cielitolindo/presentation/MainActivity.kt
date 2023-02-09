@@ -2,16 +2,12 @@ package com.example.cielitolindo.presentation
 
 import android.content.Context
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,6 +16,10 @@ import androidx.navigation.navArgument
 import com.example.cielitolindo.presentation.clientes.clientes_add_edit.ClientesAddEditScreen
 import com.example.cielitolindo.presentation.clientes.clientes_detail.ClientesDetailScreen
 import com.example.cielitolindo.presentation.clientes.clientes_main.ClientesMainScreen
+import com.example.cielitolindo.presentation.pagos.cobros_add_edit.CobrosAddEditScreen
+import com.example.cielitolindo.presentation.pagos.cobros_detail.CobrosDetailScreen
+import com.example.cielitolindo.presentation.pagos.gastos_add_edit.GastosAddEditScreen
+import com.example.cielitolindo.presentation.pagos.gastos_detail.GastosDetailScreen
 import com.example.cielitolindo.presentation.pagos.pagos_main.PagosMainScreen
 import com.example.cielitolindo.presentation.reservas.reservas_add_edit.ReservasAddEditScreen
 import com.example.cielitolindo.presentation.reservas.reservas_detail.ReservasDetailScreen
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     },
                                     onNavigateUp = {
-                                        navController.popBackStack()
+                                        navController.navigate(Screen.ClientesMainScreen.route)
                                     },
                                     onNavigateToEditCliente = { clienteId ->
                                         navController.navigate(Screen.ClientesAddEditScreen.route + "?clienteId=$clienteId")
@@ -232,13 +232,19 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     },
                                     onNavigateUp = {
-                                        navController.popBackStack()
+                                        navController.navigate(Screen.ReservasMainScreen.route)
                                     },
                                     onNavigateToEditReserva = { reservaId ->
                                         navController.navigate(Screen.ReservasAddEditScreen.route + "?reservaId=$reservaId")
                                     },
                                     onNavigateToClienteDetail = { clienteId ->
                                         navController.navigate(Screen.ClientesDetailScreen.route + "?clienteId=$clienteId")
+                                    },
+                                    onNavigateToCreateCobro = { reservaId ->
+                                        navController.navigate(Screen.CobrosAddEditScreen.route + "?reservaId=$reservaId")
+                                    },
+                                    onNavigateToCobroDetail = { cobroId ->
+                                        navController.navigate(Screen.CobrosDetailScreen.route + "?cobroId=$cobroId")
                                     }
                                 )
                             }
@@ -259,13 +265,13 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     },
                                     onNavigateToCreateGasto = {
-                                        //TODO
+                                        navController.navigate(Screen.GastosAddEditScreen.route)
                                     },
                                     onNavigateToCobroDetail = { cobroId ->
-                                        //TODO
+                                        navController.navigate(Screen.CobrosDetailScreen.route + "?cobroId=$cobroId")
                                     },
                                     onNavigateToGastoDetail = { gastoId ->
-                                        //TODO
+                                        navController.navigate(Screen.GastosDetailScreen.route + "?gastoId=$gastoId")
                                     },
                                     onNavigateToClientes = {
                                         navController.navigate(Screen.ClientesMainScreen.route)
@@ -273,7 +279,144 @@ class MainActivity : AppCompatActivity() {
                                     onNavigateToReservas = {
                                         navController.navigate(Screen.ReservasMainScreen.route)
                                     },
-                                    sharedPreferences = getSharedPreferences("SETTINGS", Context.MODE_PRIVATE)
+                                    sharedPreferences = getSharedPreferences(
+                                        "SETTINGS",
+                                        Context.MODE_PRIVATE
+                                    )
+                                )
+                            }
+                            composable(
+                                route = Screen.CobrosAddEditScreen.route + "?cobroId={cobroId}&reservaId={reservaId}",
+                                arguments = listOf(
+                                    navArgument(
+                                        name = "cobroId"
+                                    ) {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    },
+                                    navArgument(
+                                        name = "reservaId"
+                                    ) {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    }
+                                )
+                            ) {
+                                CobrosAddEditScreen(
+                                    onComposing = {
+                                        scaffoldElementsState = it
+                                    },
+                                    onShowSnackbar = { message, actionLabel, duration ->
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                message,
+                                                actionLabel,
+                                                duration
+                                            )
+                                        }
+                                    },
+                                    onNavigateUp = {
+                                        navController.popBackStack()
+                                    },
+                                )
+                            }
+                            composable(
+                                route = Screen.GastosAddEditScreen.route + "?gastoId={gastoId}",
+                                arguments = listOf(
+                                    navArgument(
+                                        name = "gastoId"
+                                    ) {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    }
+                                )
+                            ) {
+                                GastosAddEditScreen(
+                                    onComposing = {
+                                        scaffoldElementsState = it
+                                    },
+                                    onShowSnackbar = { message, actionLabel, duration ->
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                message,
+                                                actionLabel,
+                                                duration
+                                            )
+                                        }
+                                    },
+                                    onNavigateUp = {
+                                        navController.popBackStack()
+                                    },
+                                )
+                            }
+                            composable(
+                                route = Screen.CobrosDetailScreen.route + "?cobroId={cobroId}",
+                                arguments = listOf(
+                                    navArgument(
+                                        name = "cobroId"
+                                    ) {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    }
+                                )
+                            ) {
+                                CobrosDetailScreen(
+                                    onComposing = {
+                                        scaffoldElementsState = it
+                                    },
+                                    onShowSnackbar = { message, actionLabel, duration ->
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                message,
+                                                actionLabel,
+                                                duration
+                                            )
+                                        }
+                                    },
+                                    onNavigateUp = {
+                                        navController.navigate(Screen.PagosMainScreen.route)
+                                    },
+                                    onNavigateToEditCobro = { cobroId ->
+                                        navController.navigate(Screen.CobrosAddEditScreen.route + "?cobroId=$cobroId")
+                                    },
+                                    onNavigateToReservaDetail = { reservaId ->
+                                        navController.navigate(Screen.ReservasDetailScreen.route + "?reservaId=$reservaId")
+                                    },
+                                    onNavigateToClienteDetail = { clienteId ->
+                                        navController.navigate(Screen.ClientesDetailScreen.route + "?clienteId=$clienteId")
+                                    }
+                                )
+                            }
+                            composable(
+                                route = Screen.GastosDetailScreen.route + "?gastoId={gastoId}",
+                                arguments = listOf(
+                                    navArgument(
+                                        name = "gastoId"
+                                    ) {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    }
+                                )
+                            ) {
+                                GastosDetailScreen(
+                                    onComposing = {
+                                        scaffoldElementsState = it
+                                    },
+                                    onShowSnackbar = { message, actionLabel, duration ->
+                                        scope.launch {
+                                            scaffoldState.snackbarHostState.showSnackbar(
+                                                message,
+                                                actionLabel,
+                                                duration
+                                            )
+                                        }
+                                    },
+                                    onNavigateUp = {
+                                        navController.navigate(Screen.PagosMainScreen.route)
+                                    },
+                                    onNavigateToEditGasto = { gastoId ->
+                                        navController.navigate(Screen.GastosAddEditScreen.route + "?gastoId=$gastoId")
+                                    }
                                 )
                             }
                         }

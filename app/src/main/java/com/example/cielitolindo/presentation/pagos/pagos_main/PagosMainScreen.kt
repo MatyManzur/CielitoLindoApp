@@ -1,16 +1,12 @@
 package com.example.cielitolindo.presentation.pagos.pagos_main
 
 import android.content.SharedPreferences
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -31,10 +27,11 @@ import com.example.cielitolindo.presentation.pagos.pagos_main.components.PagoInf
 import com.example.cielitolindo.presentation.pagos.pagos_main.components.SectionHeader
 import com.example.cielitolindo.presentation.pagos.pagos_main.util.DateDefinitionCriteria
 import com.example.cielitolindo.presentation.pagos.pagos_main.util.DateGroupCriteria
+import com.example.cielitolindo.presentation.pagos.pagos_main.util.PagoInfo
 import com.example.cielitolindo.presentation.reservas.reservas_main.components.PeriodPicker
 import com.example.cielitolindo.presentation.util.LoadingState
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
-import com.example.cielitolindo.ui.theme.tertiaryVariant
+import com.example.cielitolindo.ui.theme.tertiary
 
 @Composable
 fun PagosMainScreen(
@@ -57,14 +54,6 @@ fun PagosMainScreen(
     LaunchedEffect(key1 = true) {
         onComposing(
             ScaffoldElementsState(
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { onNavigateToCreateGasto() },
-                        backgroundColor = MaterialTheme.colors.error
-                    ) {
-                        Icon(Icons.Filled.Add, "Nuevo Gasto")
-                    }
-                },
                 topBar = {
                     TopAppBar(
                         title = {
@@ -110,9 +99,11 @@ fun PagosMainScreen(
     }
 
     Refreshable(refreshFunction = viewModel::updatePagos) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
             PeriodPicker(
                 currentPeriod = state.getPeriodString(),
                 onPreviousPeriod = { viewModel.onEvent(PagosEvent.PreviousPeriod) },
@@ -129,14 +120,19 @@ fun PagosMainScreen(
             })
             if (state.showCobrosDetail) {
                 for (casa in state.cobros.keys) {
-                    Text(text = "Casa " + casa.stringName, style = MaterialTheme.typography.h6)
+                    Text(
+                        text = "Casa " + casa.stringName,
+                        style = MaterialTheme.typography.h6,
+                        modifier = Modifier.padding(top = 4.dp, start = 8.dp)
+                    )
                     for (pagoInfo in state.cobros[casa]!!) {
                         if (pagoInfo.element is Cobro)
                             PagoInfoDetail(
                                 pagoInfo = pagoInfo,
-                                onSeeDetailClick = { onNavigateToCobroDetail(pagoInfo.element.id) },
-                                onSeeDetailButtonColor = casa.getFirstColor(),
-                                importesColor = MaterialTheme.colors.tertiaryVariant
+                                onPostpendIconClick = { onNavigateToCobroDetail(pagoInfo.element.id) },
+                                postpendIconColor = MaterialTheme.colors.onSurface,
+                                importesColor = MaterialTheme.colors.tertiary,
+                                dividerAtEnd = true
                             )
                     }
                 }
@@ -148,13 +144,13 @@ fun PagosMainScreen(
                         pagoInfo = pagoInfo,
                         prependIcon = Icons.Filled.Home,
                         prependIconColor = pagoInfo.element.getFirstColor(),
-                        importesColor = MaterialTheme.colors.tertiaryVariant
+                        importesColor = MaterialTheme.colors.tertiary
                     )
             }
             Divider(modifier = Modifier.fillMaxWidth())
             PagoInfoDetail(
                 pagoInfo = state.getCobrosTotal(),
-                importesColor = MaterialTheme.colors.tertiaryVariant
+                importesColor = MaterialTheme.colors.tertiary
             )
 
             //Gastos
@@ -165,19 +161,36 @@ fun PagosMainScreen(
             })
             if (state.showGastosDetail) {
                 for (categoria in state.gastos.keys) {
-                    Text(text = categoria.stringName, style = MaterialTheme.typography.h6)
+                    Text(
+                        text = categoria.stringName,
+                        style = MaterialTheme.typography.h6,
+                        modifier = Modifier.padding(top = 4.dp, start = 8.dp)
+                    )
                     for (pagoInfo in state.gastos[categoria]!!) {
                         if (pagoInfo.element is Gasto)
                             PagoInfoDetail(
                                 pagoInfo = pagoInfo,
-                                onSeeDetailClick = { onNavigateToGastoDetail(pagoInfo.element.id) },
-                                onSeeDetailButtonColor = MaterialTheme.colors.error,
-                                importesColor = MaterialTheme.colors.error
+                                onPostpendIconClick = { onNavigateToGastoDetail(pagoInfo.element.id) },
+                                postpendIconColor = MaterialTheme.colors.onSurface,
+                                importesColor = MaterialTheme.colors.error,
+                                dividerAtEnd = true
                             )
                     }
                 }
                 Divider(modifier = Modifier.fillMaxWidth())
             }
+            PagoInfoDetail(
+                pagoInfo = PagoInfo(
+                    descripcion = "AGREGAR GASTO",
+                    importes = mapOf(),
+                ),
+                onPostpendIconClick = { onNavigateToCreateGasto() },
+                postpendIconColor = MaterialTheme.colors.error,
+                importesColor = MaterialTheme.colors.error,
+                postpendIcon = Icons.Filled.AddCircle,
+                dividerAtEnd = true,
+                noImportes = true
+            )
             for (pagoInfo in state.getGastosSubtotals()) {
                 if (pagoInfo.element is Categoria)
                     PagoInfoDetail(
@@ -197,7 +210,7 @@ fun PagosMainScreen(
             SectionHeader(title = "Ganancias", hideShowState = null, onShow = {}, onHide = {})
             PagoInfoDetail(
                 pagoInfo = state.getGananciasTotal(),
-                importesColor = MaterialTheme.colors.tertiaryVariant
+                importesColor = MaterialTheme.colors.tertiary
             )
             Divider(modifier = Modifier.fillMaxWidth())
         }
@@ -222,9 +235,11 @@ fun PagosMainScreen(
                             text = "Visualización de pagos",
                             style = MaterialTheme.typography.h6
                         )
-                        Divider(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp))
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        )
                         Text(
                             text = "Tipo de Período",
                             style = MaterialTheme.typography.body1,

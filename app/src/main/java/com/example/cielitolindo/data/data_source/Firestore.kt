@@ -1,10 +1,6 @@
 package com.example.cielitolindo.data.data_source
 
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.room.PrimaryKey
 import com.example.cielitolindo.domain.model.*
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
@@ -221,6 +217,7 @@ data class FirestoreCobro(
     val modoPago: String?,
     val descripcion: String?,
     val importe: Float,
+    val enConceptoDe: Float?,
     val moneda: String
 ) {
     fun toCobro(): Cobro {
@@ -232,6 +229,7 @@ data class FirestoreCobro(
             modoPago = modoPago,
             descripcion = descripcion,
             importe = importe,
+            enConceptoDe = enConceptoDe,
             moneda = Moneda.valueOf(moneda)
         )
     }
@@ -244,10 +242,11 @@ data class FirestoreCobro(
         modoPago = cobro.modoPago,
         descripcion = cobro.descripcion,
         importe = cobro.importe,
+        enConceptoDe = cobro.enConceptoDe,
         moneda = cobro.moneda.name
     )
 
-    constructor() : this("", "", "", "", null, null, 0f, "")
+    constructor() : this("", "", "", "", null, null, 0f, null, "")
 }
 
 data class FirestoreGasto(

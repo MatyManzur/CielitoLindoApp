@@ -1,5 +1,7 @@
-package com.example.cielitolindo.presentation.reservas.reservas_add_edit
+package com.example.cielitolindo.presentation.pagos.cobros_add_edit
 
+import android.app.DatePickerDialog
+import android.widget.DatePicker
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -8,31 +10,31 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.EditCalendar
-import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.FragmentManager
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.cielitolindo.domain.model.Casa
 import com.example.cielitolindo.domain.model.Moneda
+import com.example.cielitolindo.domain.model.getNombreCompleto
+import com.example.cielitolindo.domain.model.getRangoDeFechasString
 import com.example.cielitolindo.presentation.components.DefaultRadioButton
+import com.example.cielitolindo.presentation.components.NameValueText
 import com.example.cielitolindo.presentation.components.RoundedCornerIconButton
-import com.example.cielitolindo.presentation.reservas.reservas_add_edit.components.ClienteSearchDialog
 import com.example.cielitolindo.presentation.util.LoadingState
 import com.example.cielitolindo.presentation.util.ScaffoldElementsState
-import com.google.android.material.datepicker.MaterialDatePicker
+
 import kotlinx.coroutines.flow.collectLatest
-import java.time.Instant
-import java.time.ZoneId
+import java.time.LocalDate
 
 @Composable
-fun ReservasAddEditScreen(
+fun CobrosAddEditScreen(
     onComposing: (ScaffoldElementsState) -> Unit,
     onShowSnackbar: (
         String,
@@ -40,8 +42,7 @@ fun ReservasAddEditScreen(
         SnackbarDuration
     ) -> Unit,
     onNavigateUp: () -> Unit,
-    viewModel: ReservasAddEditVM = hiltViewModel(),
-    supportFragmentManager: FragmentManager,
+    viewModel: CobrosAddEditVM = hiltViewModel(),
 ) {
     val state = viewModel.state.value
     val formatter = viewModel.formatter
@@ -57,14 +58,14 @@ fun ReservasAddEditScreen(
                     FloatingActionButton(
                         onClick = {
                             if (state.isSaveEnabled)
-                                viewModel.onEvent(ReservasAddEditEvent.OnSave)
+                                viewModel.onEvent(CobrosAddEditEvent.OnSave)
                         },
                         backgroundColor = if (state.isSaveEnabled) MaterialTheme.colors.secondary else Color.Gray
                     ) {
                         if (state.loadingInfo.loadingState == LoadingState.READY) {
                             Icon(
                                 imageVector = Icons.Filled.Save,
-                                contentDescription = "Guardar Reserva",
+                                contentDescription = "Guardar Cobro",
                                 tint = MaterialTheme.colors.onSecondary.copy(alpha = if (state.isSaveEnabled) 1f else .5f)
                             )
                         } else {
@@ -84,7 +85,7 @@ fun ReservasAddEditScreen(
                         navigationIcon = {
                             IconButton(
                                 onClick = {
-                                    viewModel.onEvent(ReservasAddEditEvent.OnDiscard)
+                                    viewModel.onEvent(CobrosAddEditEvent.OnDiscard)
                                 }
                             ) {
                                 Icon(
@@ -101,9 +102,9 @@ fun ReservasAddEditScreen(
         )
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                ReservasAddEditVM.UiEvent.DiscardReserva -> onNavigateUp()
-                ReservasAddEditVM.UiEvent.SaveReserva -> onNavigateUp()
-                is ReservasAddEditVM.UiEvent.ShowSnackbar -> onShowSnackbar(
+                CobrosAddEditVM.UiEvent.DiscardCobro -> onNavigateUp()
+                CobrosAddEditVM.UiEvent.SaveCobro -> onNavigateUp()
+                is CobrosAddEditVM.UiEvent.ShowSnackbar -> onShowSnackbar(
                     event.message,
                     null,
                     SnackbarDuration.Short
@@ -112,16 +113,22 @@ fun ReservasAddEditScreen(
         }
     }
 
-    val picker = MaterialDatePicker.Builder.dateRangePicker()
-        .setTitleText("Seleccione Fechas de Ingreso y Egreso")
-        .build()
+    val context = LocalContext.current
 
-    picker.addOnPositiveButtonClickListener { selection ->
-        val selectedFechaIngreso = Instant.ofEpochMilli(selection.first).atZone(ZoneId.of("UTC")).toLocalDate()
-        viewModel.onEvent(ReservasAddEditEvent.EnteredFechaIngreso(selectedFechaIngreso))
-        val selectedFechaEgreso = Instant.ofEpochMilli(selection.second).atZone(ZoneId.of("UTC")).toLocalDate()
-        viewModel.onEvent(ReservasAddEditEvent.EnteredFechaEgreso(selectedFechaEgreso))
-    }
+    val datePicker = DatePickerDialog(
+        context,
+        { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
+            viewModel.onEvent(
+                CobrosAddEditEvent.EnteredFechaPago(
+                    LocalDate.of(
+                        mYear,
+                        mMonth + 1,
+                        mDayOfMonth
+                    )
+                )
+            )
+        }, state.fechaPago.year, state.fechaPago.monthValue - 1, state.fechaPago.dayOfMonth
+    )
 
     Column(
         modifier = Modifier
@@ -130,89 +137,58 @@ fun ReservasAddEditScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top,
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value = state.cliente.text,
-                onValueChange = {
-
-                },
-                label = {
-                    Text(text = state.cliente.label)
-                },
-                textStyle = MaterialTheme.typography.body1,
-                singleLine = true,
-                enabled = false,
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .weight(1f)
-            )
-            RoundedCornerIconButton(
-                onClick = { viewModel.onEvent(ReservasAddEditEvent.ShowClienteSearchDialog) },
-                icon = Icons.Filled.PersonSearch,
-                contentDescription = "Buscar Cliente"
-            )
-        }
-        Divider(modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp))
-        Text(text = "Casa", style = MaterialTheme.typography.body1)
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            for (c in Casa.values()) {
-                DefaultRadioButton(
-                    text = c.stringName,
-                    selected = state.casa == c,
-                    onClick = { viewModel.onEvent(ReservasAddEditEvent.EnteredCasa(c)) },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = c.getSecondColor(),
-                    )
-                )
-            }
-        }
-        Divider(modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 4.dp))
+        NameValueText(fieldName = "Cliente", fieldValue = state.cliente?.getNombreCompleto() ?: "")
+        NameValueText(
+            fieldName = "Reserva", fieldValue = "Casa ${state.reserva?.casa?.stringName ?: ""}: ${
+                state.reserva?.getRangoDeFechasString("dd/MM/yy") ?: ""
+            }"
+        )
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        )
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(IntrinsicSize.Max)
         ) {
-            Column(modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)) {
-                Text(text = "Fechas de Ingreso y Egreso", style = MaterialTheme.typography.body1)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(text = "Fecha del Cobro", style = MaterialTheme.typography.body1)
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = if (state.fechaIngreso != null && state.fechaEgreso != null) "${
-                            state.fechaIngreso.format(
-                                formatter
-                            )
-                        } al ${state.fechaEgreso.format(formatter)}" else "--/--/-- al --/--/--",
+                        text = state.fechaPago.format(formatter),
                         style = MaterialTheme.typography.h6
                     )
                     RoundedCornerIconButton(
-                        onClick = { picker.show(supportFragmentManager, "date_picker") },
+                        onClick = { datePicker.show() },
                         icon = Icons.Filled.EditCalendar,
-                        contentDescription = "Seleccionar Fechas de Ingreso y Egreso"
+                        contentDescription = "Seleccionar Fecha de Cobro"
                     )
                 }
             }
         }
-        Divider(modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 4.dp))
-        Text(text = "Moneda del importe", style = MaterialTheme.typography.body1)
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp)
+        )
+        NameValueText(
+            fieldName = "Importe Total de la Reserva",
+            fieldValue = state.reserva?.moneda?.importeToString(state.reserva.importeTotal) ?: ""
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = "Moneda del cobro", style = MaterialTheme.typography.body1)
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -220,35 +196,78 @@ fun ReservasAddEditScreen(
                 DefaultRadioButton(
                     text = m.stringName,
                     selected = state.moneda == m,
-                    onClick = { viewModel.onEvent(ReservasAddEditEvent.EnteredMoneda(m)) },
+                    onClick = { viewModel.onEvent(CobrosAddEditEvent.EnteredMoneda(m)) },
                 )
             }
         }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            OutlinedTextField(
+                value = state.importe.text,
+                onValueChange = {
+                    viewModel.onEvent(CobrosAddEditEvent.EnteredImporte(it))
+                },
+                label = {
+                    Text(text = state.importe.label + if(state.moneda != null) " en " + state.moneda.unitString else "")
+                },
+                textStyle = MaterialTheme.typography.body1,
+                keyboardOptions = KeyboardOptions(
+                    autoCorrect = false,
+                    keyboardType = KeyboardType.Number,
+                ),
+                singleLine = true,
+                modifier = Modifier.weight(1f)
+            )
+            if(state.moneda != state.reserva?.moneda) {
+                OutlinedTextField(
+                    modifier = Modifier.padding(start = 16.dp).weight(1f),
+                    value = state.enConceptoDe.text,
+                    onValueChange = {
+                        viewModel.onEvent(CobrosAddEditEvent.EnteredEnConceptoDe(it))
+                    },
+                    label = {
+                        Text(text = state.enConceptoDe.label)
+                    },
+                    textStyle = MaterialTheme.typography.body1,
+                    keyboardOptions = KeyboardOptions(
+                        autoCorrect = false,
+                        keyboardType = KeyboardType.Number,
+                    ),
+                    singleLine = true,
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
-            value = state.importeTotal.text,
+            value = state.modoPago.text,
             onValueChange = {
-                viewModel.onEvent(ReservasAddEditEvent.EnteredImporteTotal(it))
+                viewModel.onEvent(CobrosAddEditEvent.EnteredModoPago(it))
             },
             label = {
-                Text(text = state.importeTotal.label)
+                Text(text = state.modoPago.label)
             },
             textStyle = MaterialTheme.typography.body1,
             keyboardOptions = KeyboardOptions(
-                autoCorrect = false,
-                keyboardType = KeyboardType.Number,
+                autoCorrect = true,
+                keyboardType = KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Sentences
             ),
             singleLine = true,
         )
-        Divider(modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp))
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        )
         OutlinedTextField(
-            value = state.observaciones.text,
+            value = state.descripcion.text,
             onValueChange = {
-                viewModel.onEvent(ReservasAddEditEvent.EnteredObservaciones(it))
+                viewModel.onEvent(CobrosAddEditEvent.EnteredDescripcion(it))
             },
             label = {
-                Text(text = state.observaciones.label)
+                Text(text = state.descripcion.label)
             },
             textStyle = MaterialTheme.typography.body1,
             keyboardOptions = KeyboardOptions(
@@ -257,16 +276,6 @@ fun ReservasAddEditScreen(
                 capitalization = KeyboardCapitalization.Sentences
             ),
             singleLine = false,
-        )
-    }
-
-    if (state.showClienteSearchDialog) {
-        ClienteSearchDialog(
-            onDismiss = { viewModel.onEvent(ReservasAddEditEvent.HideClienteSearchDialog) },
-            onClienteSelected = { id, name ->
-                viewModel.onEvent(ReservasAddEditEvent.EnteredCliente(id, name))
-            },
-            allClientes = state.allClientes
         )
     }
 }

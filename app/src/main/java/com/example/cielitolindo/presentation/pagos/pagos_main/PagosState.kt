@@ -2,13 +2,11 @@ package com.example.cielitolindo.presentation.pagos.pagos_main
 
 import com.example.cielitolindo.domain.model.Casa
 import com.example.cielitolindo.domain.model.Categoria
-import com.example.cielitolindo.domain.model.Gasto
 import com.example.cielitolindo.domain.model.Moneda
 import com.example.cielitolindo.presentation.pagos.pagos_main.util.DateDefinitionCriteria
 import com.example.cielitolindo.presentation.pagos.pagos_main.util.DateGroupCriteria
 import com.example.cielitolindo.presentation.pagos.pagos_main.util.PagoInfo
 import com.example.cielitolindo.presentation.pagos.pagos_main.util.Temporada
-import com.example.cielitolindo.presentation.reservas.reservas_detail.ReservasDetailEvent
 import com.example.cielitolindo.presentation.util.LoadingInfo
 import com.example.cielitolindo.presentation.util.LoadingState
 import java.time.LocalDate
@@ -49,10 +47,10 @@ data class PagosState(
                 val importes = mutableMapOf<Moneda, Float>()
                 for (pagoInfo in cobros[casa]!!) {
                     pagoInfo.importes.forEach { (moneda, importe) ->
-                        importes[moneda] = importes[moneda]?.plus(importe) ?: 0f
+                        importes[moneda] = importes[moneda]?.plus(importe) ?: importe
                     }
                 }
-                ans.add(PagoInfo(casa,"Casa " + casa.stringName, importes = importes))
+                ans.add(PagoInfo(casa,"C. " + casa.stringName, importes = importes))
             }
         }
         return ans
@@ -62,7 +60,7 @@ data class PagosState(
         val importes = mutableMapOf<Moneda, Float>()
         for (pagoInfo in getCobrosSubtotals()) {
             pagoInfo.importes.forEach { (moneda, importe) ->
-                importes[moneda] = importes[moneda]?.plus(importe) ?: 0f
+                importes[moneda] = importes[moneda]?.plus(importe) ?: importe
             }
         }
         return PagoInfo(descripcion = "TOTAL", importes = importes)
@@ -75,7 +73,7 @@ data class PagosState(
                 val importes = mutableMapOf<Moneda, Float>()
                 for (pagoInfo in gastos[categoria]!!) {
                     pagoInfo.importes.forEach { (moneda, importe) ->
-                        importes[moneda] = importes[moneda]?.plus(importe) ?: 0f
+                        importes[moneda] = importes[moneda]?.plus(importe) ?: importe
                     }
                 }
                 ans.add(PagoInfo(categoria, categoria.stringName, importes = importes))
@@ -88,7 +86,7 @@ data class PagosState(
         val importes = mutableMapOf<Moneda, Float>()
         for (pagoInfo in getGastosSubtotals()) {
             pagoInfo.importes.forEach { (moneda, importe) ->
-                importes[moneda] = importes[moneda]?.plus(importe) ?: 0f
+                importes[moneda] = importes[moneda]?.plus(importe) ?: importe
             }
         }
         return PagoInfo(descripcion = "TOTAL", importes = importes)
@@ -100,7 +98,7 @@ data class PagosState(
         val gastosTotal = getGastosTotal().importes
         for (moneda in Moneda.values()) {
             importes[moneda] = cobrosTotal[moneda] ?: 0f
-            importes[moneda] = importes[moneda]?.minus(gastosTotal[moneda] ?: 0f) ?: 0f
+            importes[moneda] = importes[moneda]?.minus(gastosTotal[moneda] ?: 0f) ?: 0f.minus(gastosTotal[moneda] ?: 0f)
         }
         return PagoInfo(descripcion = "Ganancias", importes = importes)
     }

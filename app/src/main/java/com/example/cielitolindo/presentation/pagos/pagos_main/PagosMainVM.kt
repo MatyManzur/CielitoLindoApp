@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cielitolindo.domain.model.Casa
 import com.example.cielitolindo.domain.model.Categoria
+import com.example.cielitolindo.domain.model.getNombreCompleto
 import com.example.cielitolindo.domain.model.getRangoDeFechasString
 import com.example.cielitolindo.domain.use_case.clientes.ClienteUseCases
 import com.example.cielitolindo.domain.use_case.cobros.CobroUseCases
@@ -156,12 +157,7 @@ class PagosMainVM @Inject constructor(
                                 if (casa != null) {
                                     map.putIfAbsent(casa, mutableListOf())
                                     val descripcion =
-                                        "${clienteUseCases.getCliente(reserva.clienteId)?.nombre ?: ""}: ${
-                                            casa.stringName.substring(
-                                                0,
-                                                2
-                                            ).uppercase()
-                                        }${reserva.getRangoDeFechasString("dd/MM", ">")}"
+                                        "${clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: ""}\n${reserva.getRangoDeFechasString("dd/MM", ">")}"
                                     map[casa]!!.add(
                                         PagoInfo(
                                             element = cobro,
@@ -174,6 +170,7 @@ class PagosMainVM @Inject constructor(
                             }
                             _state.value = state.value.copy(
                                 cobros = map,
+                                loadingInfo = LoadingInfo(LoadingState.READY)
                             )
                         }.launchIn(viewModelScope)
             }
@@ -190,12 +187,7 @@ class PagosMainVM @Inject constructor(
                         if (casa != null) {
                             map.putIfAbsent(casa, mutableListOf())
                             val descripcion =
-                                "${clienteUseCases.getCliente(reserva.clienteId)?.nombre ?: ""}: ${
-                                    casa.stringName.substring(
-                                        0,
-                                        2
-                                    ).uppercase()
-                                }${reserva.getRangoDeFechasString("dd/MM", ">")}"
+                                "${clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: ""}\n${reserva.getRangoDeFechasString("dd/MM", ">")}"
                             map[casa]!!.add(
                                 PagoInfo(
                                     element = cobro,

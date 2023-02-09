@@ -1,4 +1,4 @@
-package com.example.cielitolindo.presentation.reservas.reservas_detail
+package com.example.cielitolindo.presentation.pagos.gastos_detail
 
 import android.os.Handler
 import androidx.compose.runtime.State
@@ -6,60 +6,50 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cielitolindo.domain.model.getNombreCompleto
-import com.example.cielitolindo.domain.use_case.clientes.ClienteUseCases
-import com.example.cielitolindo.domain.use_case.cobros.CobroUseCases
-import com.example.cielitolindo.domain.use_case.reservas.ReservaUseCases
+import com.example.cielitolindo.domain.use_case.gastos.GastoUseCases
 import com.example.cielitolindo.presentation.util.LoadingInfo
 import com.example.cielitolindo.presentation.util.LoadingState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ReservasDetailVM @Inject constructor(
-    private val reservaUseCases: ReservaUseCases,
-    private val clienteUseCases: ClienteUseCases,
-    private val cobroUseCases: CobroUseCases,
+class GastosDetailVM @Inject constructor(
+    private val gastoUseCases: GastoUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val _state = mutableStateOf(ReservasDetailState())
-    val state: State<ReservasDetailState> = _state
+    private val _state = mutableStateOf(GastosDetailState())
+    val state: State<GastosDetailState> = _state
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-        savedStateHandle.get<String>("reservaId")?.let { id ->
+        savedStateHandle.get<String>("gastoId")?.let { id ->
             viewModelScope.launch {
-                reservaUseCases.getReserva(id)?.also { reserva ->
+                gastoUseCases.getGasto(id)?.also { gasto ->
                     _state.value = state.value.copy(
                         id = id,
-                        reserva = reserva,
-                        clienteName = clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: "",
-                        cobros = cobroUseCases.getCobrosFromReserva(reserva.id).first()
+                        gasto = gasto
                     )
                 }
             }
         }
     }
 
-    suspend fun updateReserva() {
-        reservaUseCases.getReserva(state.value.id)?.also { reserva ->
+    suspend fun updateGasto() {
+        gastoUseCases.getGasto(state.value.id)?.also { gasto ->
             _state.value = state.value.copy(
-                reserva = reserva,
-                clienteName = clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: "",
-                cobros = cobroUseCases.getCobrosFromReserva(reserva.id).first()
+                gasto = gasto
             )
         }
     }
 
-    fun onEvent(event: ReservasDetailEvent) {
+    fun onEvent(event: GastosDetailEvent) {
         when (event) {
-            ReservasDetailEvent.OnDelete -> {
+            GastosDetailEvent.OnDelete -> {
                 _state.value = state.value.copy(
                     loadingInfo = LoadingInfo(LoadingState.LOADING)
                 )
@@ -71,7 +61,7 @@ class ReservasDetailVM @Inject constructor(
                                 viewModelScope.launch {
                                     _eventFlow.emit(
                                         UiEvent.ShowSnackbar(
-                                            "Ocurrió un error en la conexión a la base de datos remota, la reserva se eliminará localmente y se intentará de nuevo cuando mejore la conexión!"
+                                            "Ocurrió un error en la conexión a la base de datos remota, el gasto se eliminará localmente y se intentará de nuevo cuando mejore la conexión!"
                                         )
                                     )
                                     _eventFlow.emit(UiEvent.Exit)
@@ -97,16 +87,16 @@ class ReservasDetailVM @Inject constructor(
                             }
                         }
                     }, state.value.loadingInfo.loadingTimeout)
-                    val reserva = state.value.reserva
+                    val gasto = state.value.gasto
                     try {
-                        if (reserva != null) {
-                            reservaUseCases.deleteReserva(
-                                reserva = reserva,
+                        if (gasto != null) {
+                            gastoUseCases.deleteGasto(
+                                gasto = gasto,
                                 onFirebaseSuccessListener = {
                                     _state.value = state.value.copy(
                                         loadingInfo = LoadingInfo(
                                             LoadingState.SUCCESS,
-                                            "La reserva ha sido eliminada correctamente!"
+                                            "El gasto ha sido eliminado correctamente!"
                                         )
                                     )
                                 },
@@ -114,7 +104,7 @@ class ReservasDetailVM @Inject constructor(
                                     _state.value = state.value.copy(
                                         loadingInfo = LoadingInfo(
                                             LoadingState.ERROR,
-                                            "Error al eliminar la reserva: ${it.message}"
+                                            "Error al eliminar el gasto: ${it.message}"
                                         )
                                     )
                                 }
@@ -123,7 +113,7 @@ class ReservasDetailVM @Inject constructor(
                             _state.value = state.value.copy(
                                 loadingInfo = LoadingInfo(
                                     LoadingState.ERROR,
-                                    "Error inesperado: No se pudo encontrar la reserva!"
+                                    "Error inesperado: No se pudo encontrar el gasto!"
                                 )
                             )
                         }
@@ -132,29 +122,29 @@ class ReservasDetailVM @Inject constructor(
                         _state.value = state.value.copy(
                             loadingInfo = LoadingInfo(
                                 LoadingState.ERROR,
-                                "Error al eliminar la reserva: ${e.message}"
+                                "Error al eliminar el gasto: ${e.message}"
                             )
                         )
                     }
                 }
             }
-            ReservasDetailEvent.OnEdit -> {
+            GastosDetailEvent.OnEdit -> {
                 if (state.value.id != "") {
                     viewModelScope.launch {
-                        _eventFlow.emit(UiEvent.EditReserva(state.value.id))
+                        _eventFlow.emit(UiEvent.EditGasto(state.value.id))
                     }
                 } else {
                     viewModelScope.launch {
-                        _eventFlow.emit(UiEvent.ShowSnackbar("Error inesperado: No se encontró la reserva"))
+                        _eventFlow.emit(UiEvent.ShowSnackbar("Error inesperado: No se encontró el gasto"))
                     }
                 }
             }
-            ReservasDetailEvent.OnHideDeleteConfirmationDialog -> {
+            GastosDetailEvent.OnHideDeleteConfirmationDialog -> {
                 _state.value = state.value.copy(
                     showDeleteConfirmationDialog = false
                 )
             }
-            ReservasDetailEvent.OnShowDeleteConfirmationDialog -> {
+            GastosDetailEvent.OnShowDeleteConfirmationDialog -> {
                 _state.value = state.value.copy(
                     showDeleteConfirmationDialog = true
                 )
@@ -162,10 +152,9 @@ class ReservasDetailVM @Inject constructor(
         }
     }
 
-
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
-        data class EditReserva(val reservaId: String) : UiEvent()
+        data class EditGasto(val gastoId: String) : UiEvent()
         object Exit : UiEvent()
     }
 }

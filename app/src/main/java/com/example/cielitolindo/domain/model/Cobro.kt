@@ -13,6 +13,7 @@ data class Cobro(
     val modoPago: String?,
     val descripcion: String?,
     val importe: Float,
+    val enConceptoDe: Float?,
     val moneda: Moneda
 ) : Element
 

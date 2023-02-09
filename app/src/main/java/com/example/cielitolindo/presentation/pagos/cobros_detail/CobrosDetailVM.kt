@@ -1,4 +1,4 @@
-package com.example.cielitolindo.presentation.reservas.reservas_detail
+package com.example.cielitolindo.presentation.pagos.cobros_detail
 
 import android.os.Handler
 import androidx.compose.runtime.State
@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cielitolindo.domain.model.getNombreCompleto
 import com.example.cielitolindo.domain.use_case.clientes.ClienteUseCases
 import com.example.cielitolindo.domain.use_case.cobros.CobroUseCases
 import com.example.cielitolindo.domain.use_case.reservas.ReservaUseCases
@@ -15,51 +14,50 @@ import com.example.cielitolindo.presentation.util.LoadingState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ReservasDetailVM @Inject constructor(
+class CobrosDetailVM @Inject constructor(
     private val reservaUseCases: ReservaUseCases,
     private val clienteUseCases: ClienteUseCases,
     private val cobroUseCases: CobroUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val _state = mutableStateOf(ReservasDetailState())
-    val state: State<ReservasDetailState> = _state
+    private val _state = mutableStateOf(CobrosDetailState())
+    val state: State<CobrosDetailState> = _state
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-        savedStateHandle.get<String>("reservaId")?.let { id ->
+        savedStateHandle.get<String>("cobroId")?.let { id ->
             viewModelScope.launch {
-                reservaUseCases.getReserva(id)?.also { reserva ->
+                cobroUseCases.getCobro(id)?.also { cobro ->
                     _state.value = state.value.copy(
                         id = id,
-                        reserva = reserva,
-                        clienteName = clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: "",
-                        cobros = cobroUseCases.getCobrosFromReserva(reserva.id).first()
+                        reserva = reservaUseCases.getReserva(cobro.reservaId),
+                        cliente = clienteUseCases.getCliente(cobro.clienteId),
+                        cobro = cobro
                     )
                 }
             }
         }
     }
 
-    suspend fun updateReserva() {
-        reservaUseCases.getReserva(state.value.id)?.also { reserva ->
+    suspend fun updateCobro() {
+        cobroUseCases.getCobro(state.value.id)?.also { cobro ->
             _state.value = state.value.copy(
-                reserva = reserva,
-                clienteName = clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: "",
-                cobros = cobroUseCases.getCobrosFromReserva(reserva.id).first()
+                reserva = reservaUseCases.getReserva(cobro.reservaId),
+                cliente = clienteUseCases.getCliente(cobro.clienteId),
+                cobro = cobro
             )
         }
     }
 
-    fun onEvent(event: ReservasDetailEvent) {
+    fun onEvent(event: CobrosDetailEvent) {
         when (event) {
-            ReservasDetailEvent.OnDelete -> {
+            CobrosDetailEvent.OnDelete -> {
                 _state.value = state.value.copy(
                     loadingInfo = LoadingInfo(LoadingState.LOADING)
                 )
@@ -71,7 +69,7 @@ class ReservasDetailVM @Inject constructor(
                                 viewModelScope.launch {
                                     _eventFlow.emit(
                                         UiEvent.ShowSnackbar(
-                                            "Ocurrió un error en la conexión a la base de datos remota, la reserva se eliminará localmente y se intentará de nuevo cuando mejore la conexión!"
+                                            "Ocurrió un error en la conexión a la base de datos remota, el cobro se eliminará localmente y se intentará de nuevo cuando mejore la conexión!"
                                         )
                                     )
                                     _eventFlow.emit(UiEvent.Exit)
@@ -97,16 +95,16 @@ class ReservasDetailVM @Inject constructor(
                             }
                         }
                     }, state.value.loadingInfo.loadingTimeout)
-                    val reserva = state.value.reserva
+                    val cobro = state.value.cobro
                     try {
-                        if (reserva != null) {
-                            reservaUseCases.deleteReserva(
-                                reserva = reserva,
+                        if (cobro != null) {
+                            cobroUseCases.deleteCobro(
+                                cobro = cobro,
                                 onFirebaseSuccessListener = {
                                     _state.value = state.value.copy(
                                         loadingInfo = LoadingInfo(
                                             LoadingState.SUCCESS,
-                                            "La reserva ha sido eliminada correctamente!"
+                                            "El cobro ha sido eliminado correctamente!"
                                         )
                                     )
                                 },
@@ -114,7 +112,7 @@ class ReservasDetailVM @Inject constructor(
                                     _state.value = state.value.copy(
                                         loadingInfo = LoadingInfo(
                                             LoadingState.ERROR,
-                                            "Error al eliminar la reserva: ${it.message}"
+                                            "Error al eliminar el cobro: ${it.message}"
                                         )
                                     )
                                 }
@@ -123,7 +121,7 @@ class ReservasDetailVM @Inject constructor(
                             _state.value = state.value.copy(
                                 loadingInfo = LoadingInfo(
                                     LoadingState.ERROR,
-                                    "Error inesperado: No se pudo encontrar la reserva!"
+                                    "Error inesperado: No se pudo encontrar el cobro!"
                                 )
                             )
                         }
@@ -132,29 +130,29 @@ class ReservasDetailVM @Inject constructor(
                         _state.value = state.value.copy(
                             loadingInfo = LoadingInfo(
                                 LoadingState.ERROR,
-                                "Error al eliminar la reserva: ${e.message}"
+                                "Error al eliminar el cobro: ${e.message}"
                             )
                         )
                     }
                 }
             }
-            ReservasDetailEvent.OnEdit -> {
+            CobrosDetailEvent.OnEdit -> {
                 if (state.value.id != "") {
                     viewModelScope.launch {
-                        _eventFlow.emit(UiEvent.EditReserva(state.value.id))
+                        _eventFlow.emit(UiEvent.EditCobro(state.value.id))
                     }
                 } else {
                     viewModelScope.launch {
-                        _eventFlow.emit(UiEvent.ShowSnackbar("Error inesperado: No se encontró la reserva"))
+                        _eventFlow.emit(UiEvent.ShowSnackbar("Error inesperado: No se encontró el cobro"))
                     }
                 }
             }
-            ReservasDetailEvent.OnHideDeleteConfirmationDialog -> {
+            CobrosDetailEvent.OnHideDeleteConfirmationDialog -> {
                 _state.value = state.value.copy(
                     showDeleteConfirmationDialog = false
                 )
             }
-            ReservasDetailEvent.OnShowDeleteConfirmationDialog -> {
+            CobrosDetailEvent.OnShowDeleteConfirmationDialog -> {
                 _state.value = state.value.copy(
                     showDeleteConfirmationDialog = true
                 )
@@ -162,10 +160,9 @@ class ReservasDetailVM @Inject constructor(
         }
     }
 
-
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
-        data class EditReserva(val reservaId: String) : UiEvent()
+        data class EditCobro(val cobroId: String) : UiEvent()
         object Exit : UiEvent()
     }
 }
