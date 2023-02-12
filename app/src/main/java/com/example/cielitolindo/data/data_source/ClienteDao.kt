@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ClienteDao {
     @Query("SELECT * FROM cliente")
-    fun getClientes(): Flow<List<Cliente>>
+    suspend fun getClientes(): List<Cliente>
 
     @Query("SELECT * FROM cliente WHERE id = :id")
     suspend fun getClienteById(id: String): Cliente?

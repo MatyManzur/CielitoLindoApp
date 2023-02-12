@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     },
                                     onNavigateUp = {
-                                        navController.navigate(Screen.ClientesMainScreen.route)
+                                        navController.popBackStack()
                                     },
                                     onNavigateToEditCliente = { clienteId ->
                                         navController.navigate(Screen.ClientesAddEditScreen.route + "?clienteId=$clienteId")
@@ -238,7 +238,7 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     },
                                     onNavigateUp = {
-                                        navController.navigate(Screen.ReservasMainScreen.route)
+                                        navController.popBackStack()
                                     },
                                     onNavigateToEditReserva = { reservaId ->
                                         navController.navigate(Screen.ReservasAddEditScreen.route + "?reservaId=$reservaId")
@@ -270,8 +270,8 @@ class MainActivity : AppCompatActivity() {
                                             )
                                         }
                                     },
-                                    onNavigateToCreateGasto = {
-                                        navController.navigate(Screen.GastosAddEditScreen.route)
+                                    onNavigateToCreateGasto = { fecha ->
+                                        navController.navigate(Screen.GastosAddEditScreen.route + "?fecha=$fecha")
                                     },
                                     onNavigateToCobroDetail = { cobroId ->
                                         navController.navigate(Screen.CobrosDetailScreen.route + "?cobroId=$cobroId")
@@ -327,13 +327,19 @@ class MainActivity : AppCompatActivity() {
                                 )
                             }
                             composable(
-                                route = Screen.GastosAddEditScreen.route + "?gastoId={gastoId}",
+                                route = Screen.GastosAddEditScreen.route + "?gastoId={gastoId}&fecha={fecha}",
                                 arguments = listOf(
                                     navArgument(
                                         name = "gastoId"
                                     ) {
                                         type = NavType.StringType
                                         defaultValue = ""
+                                    },
+                                    navArgument(
+                                        name = "fecha"
+                                    ) {
+                                        type = NavType.StringType
+                                        nullable = true
                                     }
                                 )
                             ) {
@@ -380,7 +386,7 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     },
                                     onNavigateUp = {
-                                        navController.navigate(Screen.PagosMainScreen.route)
+                                        navController.popBackStack()
                                     },
                                     onNavigateToEditCobro = { cobroId ->
                                         navController.navigate(Screen.CobrosAddEditScreen.route + "?cobroId=$cobroId")
@@ -418,7 +424,7 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     },
                                     onNavigateUp = {
-                                        navController.navigate(Screen.PagosMainScreen.route)
+                                        navController.popBackStack()
                                     },
                                     onNavigateToEditGasto = { gastoId ->
                                         navController.navigate(Screen.GastosAddEditScreen.route + "?gastoId=$gastoId")

@@ -9,11 +9,11 @@ import java.time.LocalDate
 
 class GetCobrosByReservaDate(private val cobroRepository: CobroRepository, private val reservaRepository: ReservaRepository) {
     suspend operator fun invoke(dateFrom: LocalDate, dateTo: LocalDate): List<Cobro> {
-        val reservas = reservaRepository.getReservasInRange(dateFrom, dateTo).first()
+        val reservas = reservaRepository.getReservasInRange(dateFrom, dateTo)
         val ans: MutableList<Cobro> = mutableListOf()
         for (reserva in reservas) {
             if(!reserva.fechaIngreso.isBefore(dateFrom)) //para que no se sumen dos veces las reservas que se extienden de un mes a otro
-                ans.addAll(cobroRepository.getCobrosFromReserva(reserva.id).first())
+                ans.addAll(cobroRepository.getCobrosFromReserva(reserva.id))
         }
         return ans
     }

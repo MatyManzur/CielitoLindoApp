@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cielitolindo.data.data_source.formatter
 import com.example.cielitolindo.domain.model.Categoria
 import com.example.cielitolindo.domain.model.Gasto
 import com.example.cielitolindo.domain.use_case.gastos.GastoUseCases
@@ -15,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -29,7 +31,7 @@ class GastosAddEditVM @Inject constructor(
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yy")
+    val localformatter = DateTimeFormatter.ofPattern("dd/MM/yy")
 
     init {
         savedStateHandle.get<String>("gastoId")?.let { id ->
@@ -46,6 +48,9 @@ class GastosAddEditVM @Inject constructor(
                     )
                 }
             }
+        }
+        savedStateHandle.get<String>("fecha")?.let { fecha ->
+            _state.value = state.value.copy(fecha = LocalDate.parse(fecha, formatter))
         }
     }
 

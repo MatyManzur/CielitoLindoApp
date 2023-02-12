@@ -16,7 +16,7 @@ class DeleteReserva(
         onFirebaseSuccessListener: () -> Unit,
         onFirebaseFailureListener: (Exception) -> Unit
     ) {
-        if (cobroRepository.getCobrosFromReserva(reserva.id).firstOrNull()?.isNotEmpty() == true) {
+        if (cobroRepository.getCobrosFromReserva(reserva.id).isNotEmpty()) {
             throw IllegalStateException("No se puede eliminar una reserva mientras tenga cobros asociados!")
         }
         reservaRepository.deleteReserva(reserva)

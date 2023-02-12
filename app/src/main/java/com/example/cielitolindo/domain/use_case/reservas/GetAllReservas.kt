@@ -5,5 +5,5 @@ import com.example.cielitolindo.domain.repository.ReservaRepository
 import kotlinx.coroutines.flow.Flow
 
 class GetAllReservas(private val reservaRepository: ReservaRepository) {
-    operator fun invoke(): Flow<List<Reserva>> = reservaRepository.getAllReservas()
+    suspend operator fun invoke(): List<Reserva> = reservaRepository.getAllReservas()
 }

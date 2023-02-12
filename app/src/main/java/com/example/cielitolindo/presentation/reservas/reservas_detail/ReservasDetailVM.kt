@@ -40,7 +40,7 @@ class ReservasDetailVM @Inject constructor(
                         id = id,
                         reserva = reserva,
                         clienteName = clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: "",
-                        cobros = cobroUseCases.getCobrosFromReserva(reserva.id).first()
+                        cobros = cobroUseCases.getCobrosFromReserva(reserva.id).sortedByDescending { r -> r.fechaPago }
                     )
                 }
             }
@@ -52,7 +52,7 @@ class ReservasDetailVM @Inject constructor(
             _state.value = state.value.copy(
                 reserva = reserva,
                 clienteName = clienteUseCases.getCliente(reserva.clienteId)?.getNombreCompleto() ?: "",
-                cobros = cobroUseCases.getCobrosFromReserva(reserva.id).first()
+                cobros = cobroUseCases.getCobrosFromReserva(reserva.id).sortedByDescending { r -> r.fechaPago }
             )
         }
     }

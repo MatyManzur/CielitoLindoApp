@@ -5,10 +5,10 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 interface CobroRepository {
-    fun getCobrosByPaymentDate(dateFrom: LocalDate, dateTo: LocalDate) : Flow<List<Cobro>>
+    suspend fun getCobrosByPaymentDate(dateFrom: LocalDate, dateTo: LocalDate) : List<Cobro>
     suspend fun getCobroById(id: String): Cobro?
-    fun getCobrosFromCliente(clienteId: String): Flow<List<Cobro>>
-    fun getCobrosFromReserva(reservaId: String): Flow<List<Cobro>>
+    suspend fun getCobrosFromCliente(clienteId: String): List<Cobro>
+    suspend fun getCobrosFromReserva(reservaId: String): List<Cobro>
     suspend fun insertCobro(cobro: Cobro)
     suspend fun deleteCobro(cobro: Cobro)
     suspend fun deleteAllCobros()

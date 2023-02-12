@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter
 
 class CobroRepositoryImplementation(private val cobroDao: CobroDao) : CobroRepository {
 
-    override fun getCobrosByPaymentDate(dateFrom: LocalDate, dateTo: LocalDate): Flow<List<Cobro>> {
+    override suspend fun getCobrosByPaymentDate(dateFrom: LocalDate, dateTo: LocalDate): List<Cobro> {
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         return cobroDao.getCobrosByPaymentDate(dateFrom.format(formatter), dateTo.format(formatter))
     }
@@ -18,11 +18,11 @@ class CobroRepositoryImplementation(private val cobroDao: CobroDao) : CobroRepos
         return cobroDao.getCobroById(id)
     }
 
-    override fun getCobrosFromCliente(clienteId: String): Flow<List<Cobro>> {
+    override suspend fun getCobrosFromCliente(clienteId: String): List<Cobro> {
         return cobroDao.getCobrosFromCliente(clienteId)
     }
 
-    override fun getCobrosFromReserva(reservaId: String): Flow<List<Cobro>> {
+    override suspend fun getCobrosFromReserva(reservaId: String): List<Cobro> {
         return cobroDao.getCobrosFromReserva(reservaId)
     }
 

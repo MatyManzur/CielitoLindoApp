@@ -41,7 +41,7 @@ fun GastosAddEditScreen(
     viewModel: GastosAddEditVM = hiltViewModel(),
 ) {
     val state = viewModel.state.value
-    val formatter = viewModel.formatter
+    val formatter = viewModel.localformatter
 
     LaunchedEffect(
         key1 = true,

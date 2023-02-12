@@ -49,7 +49,7 @@ class CobrosAddEditVM @Inject constructor(
                             descripcion = state.value.descripcion.copy(text = cobro.descripcion ?: ""),
                             importe = state.value.importe.copy(text = cobro.importe.toString()),
                             moneda = cobro.moneda,
-                            enConceptoDe = state.value.enConceptoDe.copy(text = cobro.enConceptoDe.toString())
+                            enConceptoDe = state.value.enConceptoDe.copy(text = cobro.enConceptoDe?.toString() ?: "")
                         )
                     }
                 }

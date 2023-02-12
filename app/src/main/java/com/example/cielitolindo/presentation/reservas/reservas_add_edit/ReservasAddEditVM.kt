@@ -60,11 +60,14 @@ class ReservasAddEditVM @Inject constructor(
         savedStateHandle.get<String>("casa")?.let { casa ->
             _state.value = state.value.copy(casa = Casa.valueOf(casa))
         }
-        clienteUseCases.getClientes().onEach {
-            _state.value = state.value.copy(
-                allClientes = it
-            )
-        }.launchIn(viewModelScope)
+        viewModelScope.launch {
+            clienteUseCases.getClientes().let {
+                _state.value = state.value.copy(
+                    allClientes = it
+                )
+            }
+        }
+
     }
 
     fun onEvent(event: ReservasAddEditEvent) {

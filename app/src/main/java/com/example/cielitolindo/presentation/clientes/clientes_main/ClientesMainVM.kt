@@ -64,34 +64,41 @@ class ClientesMainVM @Inject constructor(
 
     private fun getClientes(clienteOrder: ClienteOrder) {
         getClientesJob?.cancel()
-        getClientesJob = clienteUseCases.getClientes(clienteOrder)
-            .onEach { clientes ->
-                _state.value = state.value.copy(
-                    clientes = clientes,
-                    clientesOrder = clienteOrder
-                )
-                val map = mutableMapOf<String, List<Reserva>>()
-                val saldosMap = mutableMapOf<String, Map<Moneda, Float>>()
-                for (cliente in clientes) {
-                    map[cliente.id] = reservaUseCases.getReservasFromCliente(cliente.id).first()
-                    val saldoPendiente = mutableMapOf<Moneda, Float>()
-                    if(map[cliente.id] != null) {
-                        for (reserva in map[cliente.id]!!) {
-                            saldoPendiente[reserva.moneda] = saldoPendiente[reserva.moneda]?.plus(reserva.importeTotal) ?: reserva.importeTotal
-                            val cobros = cobroUseCases.getCobrosFromReserva(reserva.id).first()
-                            for (cobro in cobros) {
-                                saldoPendiente[reserva.moneda] = saldoPendiente[reserva.moneda]?.minus(cobro.enConceptoDe ?: cobro.importe) ?: cobro.enConceptoDe ?: cobro.importe
+        getClientesJob = viewModelScope.launch {
+            clienteUseCases.getClientes(clienteOrder)
+                .let { clientes ->
+                    _state.value = state.value.copy(
+                        clientes = clientes,
+                        clientesOrder = clienteOrder
+                    )
+                    val map = mutableMapOf<String, List<Reserva>>()
+                    val saldosMap = mutableMapOf<String, Map<Moneda, Float>>()
+                    for (cliente in clientes) {
+                        map[cliente.id] = reservaUseCases.getReservasFromCliente(cliente.id)
+                        val saldoPendiente = mutableMapOf<Moneda, Float>()
+                        if (map[cliente.id] != null) {
+                            for (reserva in map[cliente.id]!!) {
+                                saldoPendiente[reserva.moneda] =
+                                    saldoPendiente[reserva.moneda]?.plus(reserva.importeTotal)
+                                        ?: reserva.importeTotal
+                                val cobros = cobroUseCases.getCobrosFromReserva(reserva.id)
+                                for (cobro in cobros) {
+                                    saldoPendiente[reserva.moneda] =
+                                        saldoPendiente[reserva.moneda]?.minus(
+                                            cobro.enConceptoDe ?: cobro.importe
+                                        ) ?: cobro.enConceptoDe ?: cobro.importe
+                                }
                             }
                         }
+                        saldosMap[cliente.id] = saldoPendiente
                     }
-                    saldosMap[cliente.id] = saldoPendiente
+                    _state.value = state.value.copy(
+                        reservasOfClientes = map,
+                        loadingInfo = LoadingInfo(LoadingState.READY),
+                        saldosPendientesOfClientes = saldosMap
+                    )
                 }
-                _state.value = state.value.copy(
-                    reservasOfClientes = map,
-                    loadingInfo = LoadingInfo(LoadingState.READY),
-                    saldosPendientesOfClientes = saldosMap
-                )
-            }
-            .launchIn(viewModelScope)
+        }
+
     }
 }

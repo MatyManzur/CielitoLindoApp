@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 class GetReservasInRange(private val reservaRepository: ReservaRepository) {
-    operator fun invoke(dateFrom: LocalDate, dateTo: LocalDate): Flow<List<Reserva>> = reservaRepository.getReservasInRange(dateFrom, dateTo)
+    suspend operator fun invoke(dateFrom: LocalDate, dateTo: LocalDate): List<Reserva> = reservaRepository.getReservasInRange(dateFrom, dateTo)
 }

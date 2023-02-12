@@ -177,7 +177,8 @@ fun ReservasDetailScreen(
                     PagoInfoDetail(
                         pagoInfo = PagoInfo(
                             descripcion = if (cobro.modoPago.isNullOrBlank()) "Cobro" else cobro.modoPago,
-                            importes = map
+                            importes = map,
+                            fecha = cobro.fechaPago,
                         ),
                         importesColor = MaterialTheme.colors.onSurface,
                         onPostpendIconClick = { onNavigateToCobroDetail(cobro.id) },

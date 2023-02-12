@@ -8,16 +8,16 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CobroDao {
     @Query("SELECT * FROM cobro WHERE fechaPago >= :dateFrom AND fechaPago <= :dateTo")
-    fun getCobrosByPaymentDate(dateFrom: String, dateTo: String) : Flow<List<Cobro>>
+    suspend fun getCobrosByPaymentDate(dateFrom: String, dateTo: String) : List<Cobro>
 
     @Query("SELECT * FROM cobro WHERE id = :id")
     suspend fun getCobroById(id: String): Cobro?
 
     @Query("SELECT * FROM cobro WHERE clienteId = :clienteId")
-    fun getCobrosFromCliente(clienteId: String): Flow<List<Cobro>>
+    suspend fun getCobrosFromCliente(clienteId: String): List<Cobro>
 
     @Query("SELECT * FROM cobro WHERE reservaId = :reservaId")
-    fun getCobrosFromReserva(reservaId: String): Flow<List<Cobro>>
+    suspend fun getCobrosFromReserva(reservaId: String): List<Cobro>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCobro(cobro: Cobro)

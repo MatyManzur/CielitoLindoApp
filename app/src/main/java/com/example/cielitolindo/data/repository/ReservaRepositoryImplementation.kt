@@ -9,11 +9,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class ReservaRepositoryImplementation(private val reservaDao: ReservaDao) : ReservaRepository {
-    override fun getAllReservas(): Flow<List<Reserva>> {
+    override suspend fun getAllReservas(): List<Reserva> {
         return reservaDao.getAllReservas()
     }
 
-    override fun getReservasInRange(dateFrom: LocalDate, dateTo: LocalDate): Flow<List<Reserva>> {
+    override suspend fun getReservasInRange(dateFrom: LocalDate, dateTo: LocalDate): List<Reserva> {
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         return reservaDao.getReservasInRange(dateFrom.format(formatter), dateTo.format(formatter))
     }
@@ -22,7 +22,7 @@ class ReservaRepositoryImplementation(private val reservaDao: ReservaDao) : Rese
         return reservaDao.getReservaById(id)
     }
 
-    override fun getReservasFromCliente(clienteId: String): Flow<List<Reserva>> {
+    override suspend fun getReservasFromCliente(clienteId: String): List<Reserva> {
         return reservaDao.getReservasFromCliente(clienteId)
     }
 

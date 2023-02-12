@@ -19,14 +19,33 @@ data class PagosState(
     val temporada: Temporada = Temporada(YearMonth.now()),
     val customPeriod: Pair<LocalDate, LocalDate> = Pair(LocalDate.now().minusMonths(3), LocalDate.now()),
     val cobros: Map<Casa, List<PagoInfo>> = mapOf(),
+    val cobrosSubtotals: List<PagoInfo> = listOf(),
+    val cobrosTotal: PagoInfo = PagoInfo(descripcion = "", importes = mapOf()),
     val gastos: Map<Categoria, List<PagoInfo>> = mapOf(),
+    val gastosSubtotals: List<PagoInfo> = listOf(),
+    val gastosTotal: PagoInfo = PagoInfo(descripcion = "", importes = mapOf()),
     val dateGroupCriteria: DateGroupCriteria = DateGroupCriteria.BY_MONTH,
     val dateDefinitionCriteria: DateDefinitionCriteria = DateDefinitionCriteria.BY_PAYMENT_DATE,
-    val loadingInfo: LoadingInfo = LoadingInfo(LoadingState.LOADING),
+    val cobrosLoadingInfo: LoadingInfo = LoadingInfo(LoadingState.LOADING),
+    val gastosLoadingInfo: LoadingInfo = LoadingInfo(LoadingState.LOADING),
     val showCobrosDetail: Boolean = false,
     val showGastosDetail: Boolean = false,
     val showSettingsDialog: Boolean = false
 ) {
+    val loadingInfo: LoadingInfo
+    get() {
+        if (cobrosLoadingInfo.loadingState == LoadingState.ERROR || cobrosLoadingInfo.loadingState == LoadingState.ERROR) {
+            return LoadingInfo(LoadingState.ERROR, "Ocurrió un error!")
+        }
+        if (cobrosLoadingInfo.loadingState == LoadingState.LOADING || cobrosLoadingInfo.loadingState == LoadingState.LOADING) {
+            return LoadingInfo(LoadingState.LOADING)
+        }
+        if (cobrosLoadingInfo.loadingState == LoadingState.SUCCESS || cobrosLoadingInfo.loadingState == LoadingState.SUCCESS) {
+            return LoadingInfo(LoadingState.SUCCESS)
+        }
+        return LoadingInfo(LoadingState.READY)
+    }
+
     fun getDateInterval(): Pair<LocalDate, LocalDate> {
         return when (dateGroupCriteria) {
             DateGroupCriteria.BY_MONTH -> Pair(yearMonth.atDay(1), yearMonth.atEndOfMonth())
@@ -45,62 +64,11 @@ data class PagosState(
         }
     }
 
-    fun getCobrosSubtotals(): List<PagoInfo> {
-        val ans = mutableListOf<PagoInfo>()
-        for (casa in Casa.values()) {
-            if (cobros.containsKey(casa) && cobros[casa] != null) {
-                val importes = mutableMapOf<Moneda, Float>()
-                for (pagoInfo in cobros[casa]!!) {
-                    pagoInfo.importes.forEach { (moneda, importe) ->
-                        importes[moneda] = importes[moneda]?.plus(importe) ?: importe
-                    }
-                }
-                ans.add(PagoInfo(casa,"C. " + casa.stringName, importes = importes))
-            }
-        }
-        return ans
-    }
-
-    fun getCobrosTotal(): PagoInfo {
+    val gananciasTotal: PagoInfo
+    get() {
         val importes = mutableMapOf<Moneda, Float>()
-        for (pagoInfo in getCobrosSubtotals()) {
-            pagoInfo.importes.forEach { (moneda, importe) ->
-                importes[moneda] = importes[moneda]?.plus(importe) ?: importe
-            }
-        }
-        return PagoInfo(descripcion = "TOTAL", importes = importes)
-    }
-
-    fun getGastosSubtotals(): List<PagoInfo> {
-        val ans = mutableListOf<PagoInfo>()
-        for (categoria in gastos.keys) {
-            if (gastos[categoria] != null) {
-                val importes = mutableMapOf<Moneda, Float>()
-                for (pagoInfo in gastos[categoria]!!) {
-                    pagoInfo.importes.forEach { (moneda, importe) ->
-                        importes[moneda] = importes[moneda]?.plus(importe) ?: importe
-                    }
-                }
-                ans.add(PagoInfo(categoria, categoria.stringName, importes = importes))
-            }
-        }
-        return ans
-    }
-
-    fun getGastosTotal(): PagoInfo {
-        val importes = mutableMapOf<Moneda, Float>()
-        for (pagoInfo in getGastosSubtotals()) {
-            pagoInfo.importes.forEach { (moneda, importe) ->
-                importes[moneda] = importes[moneda]?.plus(importe) ?: importe
-            }
-        }
-        return PagoInfo(descripcion = "TOTAL", importes = importes)
-    }
-
-    fun getGananciasTotal(): PagoInfo {
-        val importes = mutableMapOf<Moneda, Float>()
-        val cobrosTotal = getCobrosTotal().importes
-        val gastosTotal = getGastosTotal().importes
+        val cobrosTotal = cobrosTotal.importes
+        val gastosTotal = gastosTotal.importes
         for (moneda in Moneda.values()) {
             importes[moneda] = cobrosTotal[moneda] ?: 0f
             importes[moneda] = importes[moneda]?.minus(gastosTotal[moneda] ?: 0f) ?: 0f.minus(gastosTotal[moneda] ?: 0f)

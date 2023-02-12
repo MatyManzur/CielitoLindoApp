@@ -1,8 +1,6 @@
 package com.example.cielitolindo.presentation.reservas.reservas_add_edit.components
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -54,40 +52,45 @@ fun ClienteSearchDialog(
                     },
                     label = { Text(text = "Buscar Cliente") },
                 )
-                Divider(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp))
-                val clientes = allClientes.sortedByDescending { c -> c.fechaInscripcion }
-                val cornerRadius = 4.dp
-                for (cliente in clientes.filter { c -> c.getNombreCompleto().contains(search) }) {
-                    Button(
-                        onClick = {
-                            onClienteSelected(cliente.id, cliente.getNombreCompleto())
-                            onDismiss()
-                        },
-                        modifier = Modifier
-                            .padding(8.dp),
-                        shape = RoundedCornerShape(cornerRadius),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.surface, contentColor = MaterialTheme.colors.onSurface),
-                        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.2f))
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.Start,
-                            modifier = Modifier.fillMaxWidth()
+                Divider(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp))
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    val clientes = allClientes.sortedByDescending { c -> c.fechaInscripcion }
+                    val cornerRadius = 4.dp
+                    for (cliente in clientes.filter { c -> c.getNombreCompleto().contains(search, ignoreCase = true) }) {
+                        Button(
+                            onClick = {
+                                onClienteSelected(cliente.id, cliente.getNombreCompleto())
+                                onDismiss()
+                            },
+                            modifier = Modifier
+                                .padding(8.dp),
+                            shape = RoundedCornerShape(cornerRadius),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.surface, contentColor = MaterialTheme.colors.onSurface),
+                            border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.2f))
                         ) {
-                            Text(
-                                text = cliente.getNombreCompleto(),
-                                style = MaterialTheme.typography.body1
-                            )
-                            Text(
-                                text = "Inscripción: ${cliente.fechaInscripcion.format(formatter)}",
-                                style = MaterialTheme.typography.body2
-                            )
-                            Text(
-                                text = "Dirección: ${cliente.getDireccionCompleta()}",
-                                style = MaterialTheme.typography.body2
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.Start,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = cliente.getNombreCompleto(),
+                                    style = MaterialTheme.typography.body1
+                                )
+                                Text(
+                                    text = "Inscripción: ${cliente.fechaInscripcion.format(formatter)}",
+                                    style = MaterialTheme.typography.body2
+                                )
+                                Text(
+                                    text = "Dirección: ${cliente.getDireccionCompleta()}",
+                                    style = MaterialTheme.typography.body2
+                                )
+                            }
                         }
                     }
                 }
+
             }
         }
 

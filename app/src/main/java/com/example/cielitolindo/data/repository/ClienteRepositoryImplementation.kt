@@ -6,7 +6,7 @@ import com.example.cielitolindo.domain.repository.ClienteRepository
 import kotlinx.coroutines.flow.Flow
 
 class ClienteRepositoryImplementation(private val clienteDao: ClienteDao) : ClienteRepository {
-    override fun getClientes(): Flow<List<Cliente>> {
+    override suspend fun getClientes(): List<Cliente> {
         return clienteDao.getClientes()
     }
 

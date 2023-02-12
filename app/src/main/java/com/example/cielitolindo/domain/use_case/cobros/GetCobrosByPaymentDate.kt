@@ -7,5 +7,5 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 class GetCobrosByPaymentDate(private val cobroRepository: CobroRepository) {
-    operator fun invoke(dateFrom: LocalDate, dateTo: LocalDate): Flow<List<Cobro>> = cobroRepository.getCobrosByPaymentDate(dateFrom, dateTo)
+    suspend operator fun invoke(dateFrom: LocalDate, dateTo: LocalDate): List<Cobro> = cobroRepository.getCobrosByPaymentDate(dateFrom, dateTo)
 }

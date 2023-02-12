@@ -19,13 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cielitolindo.data.data_source.formatter
-import com.example.cielitolindo.data.util.TypesConverter
 import com.example.cielitolindo.domain.model.Casa
 import com.example.cielitolindo.domain.model.Categoria
 import com.example.cielitolindo.domain.model.Cobro
 import com.example.cielitolindo.domain.model.Gasto
 import com.example.cielitolindo.presentation.components.*
-import com.example.cielitolindo.presentation.pagos.gastos_add_edit.GastosAddEditEvent
 import com.example.cielitolindo.presentation.pagos.pagos_main.components.PagoInfoDetail
 import com.example.cielitolindo.presentation.pagos.pagos_main.components.SectionHeader
 import com.example.cielitolindo.presentation.pagos.pagos_main.util.DateDefinitionCriteria
@@ -43,7 +41,7 @@ fun PagosMainScreen(
     onShowSnackbar: (
         String, String?, SnackbarDuration
     ) -> Unit,
-    onNavigateToCreateGasto: () -> Unit,
+    onNavigateToCreateGasto: (String) -> Unit,
     onNavigateToCobroDetail: (String) -> Unit,
     onNavigateToGastoDetail: (String) -> Unit,
     onNavigateToClientes: () -> Unit,
@@ -149,7 +147,7 @@ fun PagosMainScreen(
                     }
                     Divider(modifier = Modifier.fillMaxWidth())
                 }
-                for (pagoInfo in state.getCobrosSubtotals()) {
+                for (pagoInfo in state.cobrosSubtotals) {
                     if (pagoInfo.element is Casa) PagoInfoDetail(
                         pagoInfo = pagoInfo,
                         prependIcon = Icons.Filled.Home,
@@ -159,7 +157,7 @@ fun PagosMainScreen(
                 }
                 Divider(modifier = Modifier.fillMaxWidth())
                 PagoInfoDetail(
-                    pagoInfo = state.getCobrosTotal(), importesColor = MaterialTheme.colors.tertiary
+                    pagoInfo = state.cobrosTotal, importesColor = MaterialTheme.colors.tertiary
                 )
 
                 //Gastos
@@ -192,14 +190,26 @@ fun PagosMainScreen(
                         descripcion = "AGREGAR GASTO",
                         importes = mapOf(),
                     ),
-                    onPostpendIconClick = { onNavigateToCreateGasto() },
+                    onPostpendIconClick = {
+                        onNavigateToCreateGasto(
+                            if (
+                                !LocalDate.now().isBefore(state.getDateInterval().first) &&
+                                !LocalDate.now().isAfter(state.getDateInterval().second)
+                            ) LocalDate.now().format(
+                                formatter
+                            ) else
+                                state.getDateInterval().first.format(
+                                    formatter
+                                )
+                        )
+                    },
                     postpendIconColor = MaterialTheme.colors.error,
                     importesColor = MaterialTheme.colors.error,
                     postpendIcon = Icons.Filled.AddCircle,
                     dividerAtEnd = true,
                     noImportes = true
                 )
-                for (pagoInfo in state.getGastosSubtotals()) {
+                for (pagoInfo in state.gastosSubtotals) {
                     if (pagoInfo.element is Categoria) PagoInfoDetail(
                         pagoInfo = pagoInfo,
                         prependIcon = pagoInfo.element.getIcon(),
@@ -209,13 +219,13 @@ fun PagosMainScreen(
                 }
                 Divider(modifier = Modifier.fillMaxWidth())
                 PagoInfoDetail(
-                    pagoInfo = state.getGastosTotal(), importesColor = MaterialTheme.colors.error
+                    pagoInfo = state.gastosTotal, importesColor = MaterialTheme.colors.error
                 )
 
                 //Ganancias
                 SectionHeader(title = "Ganancias", hideShowState = null, onShow = {}, onHide = {})
                 PagoInfoDetail(
-                    pagoInfo = state.getGananciasTotal(),
+                    pagoInfo = state.gananciasTotal,
                     importesColor = MaterialTheme.colors.tertiary
                 )
                 Divider(modifier = Modifier.fillMaxWidth())
@@ -231,15 +241,14 @@ fun PagosMainScreen(
             val selectedDate = LocalDate.of(mYear, mMonth + 1, mDayOfMonth)
             val edit = sharedPreferences.edit()
             edit.putString("CUSTOM_PERIOD_START", selectedDate.format(formatter))
-            if(selectedDate.isAfter(state.customPeriod.second)) {
+            if (selectedDate.isAfter(state.customPeriod.second)) {
                 edit.putString("CUSTOM_PERIOD_END", selectedDate.plusMonths(3).format(formatter))
                 viewModel.onEvent(
                     PagosEvent.SetCustomPeriod(
                         Pair(selectedDate, selectedDate.plusMonths(3))
                     )
                 )
-            }
-            else {
+            } else {
                 viewModel.onEvent(
                     PagosEvent.SetCustomPeriod(
                         state.customPeriod.copy(first = selectedDate)
@@ -257,7 +266,7 @@ fun PagosMainScreen(
         context,
         { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
             val selectedDate = LocalDate.of(mYear, mMonth + 1, mDayOfMonth)
-            if(selectedDate.isAfter(state.customPeriod.first)) {
+            if (selectedDate.isAfter(state.customPeriod.first)) {
                 val edit = sharedPreferences.edit()
                 edit.putString("CUSTOM_PERIOD_END", selectedDate.format(formatter))
                 edit.apply()
@@ -267,7 +276,11 @@ fun PagosMainScreen(
                     )
                 )
             } else {
-                onShowSnackbar("La fecha de final debe ser posterior a la inicial!", null, SnackbarDuration.Short)
+                onShowSnackbar(
+                    "La fecha de final debe ser posterior a la inicial!",
+                    null,
+                    SnackbarDuration.Short
+                )
             }
         },
         state.customPeriod.second.year,
@@ -340,7 +353,7 @@ fun PagosMainScreen(
                                     )
                                 )
                             })
-                        if(state.dateGroupCriteria == DateGroupCriteria.CUSTOM) {
+                        if (state.dateGroupCriteria == DateGroupCriteria.CUSTOM) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 RoundedCornerIconButton(
                                     onClick = { startDatePicker.show() },
@@ -349,7 +362,10 @@ fun PagosMainScreen(
                                     buttonSize = 36.dp,
                                     iconSize = 28.dp
                                 )
-                                Text(state.getPeriodString(), modifier = Modifier.padding(horizontal = 8.dp))
+                                Text(
+                                    state.getPeriodString(),
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
                                 RoundedCornerIconButton(
                                     onClick = { endDatePicker.show() },
                                     icon = Icons.Filled.EditCalendar,

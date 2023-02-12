@@ -4,9 +4,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cielitolindo.domain.model.Casa
-import com.example.cielitolindo.domain.model.getNombreCompleto
+import com.example.cielitolindo.domain.model.*
 import com.example.cielitolindo.domain.use_case.clientes.ClienteUseCases
+import com.example.cielitolindo.domain.use_case.cobros.CobroUseCases
+import com.example.cielitolindo.domain.use_case.gastos.GastoUseCases
 import com.example.cielitolindo.domain.use_case.reservas.ReservaUseCases
 import com.example.cielitolindo.presentation.util.LoadingInfo
 import com.example.cielitolindo.presentation.util.LoadingState
@@ -22,18 +23,23 @@ import javax.inject.Inject
 @HiltViewModel
 class ReservasMainVM @Inject constructor(
     private val clienteUseCases: ClienteUseCases,
-    private val reservaUseCases: ReservaUseCases
+    private val reservaUseCases: ReservaUseCases,
+    private val gastoUseCases: GastoUseCases,
+    private val cobroUseCases: CobroUseCases
 ) : ViewModel() {
     private val _state = mutableStateOf(ReservasState())
     val state: State<ReservasState> = _state
 
-    private var getReservasJobs: MutableList<Job?> = mutableListOf(null, null, null, null, null, null)
+    private var getReservasJobs: MutableList<Job?> =
+        mutableListOf(null, null, null, null, null, null)
 
     init {
+
         viewModelScope.launch {
             reservaUseCases.fetchReservas()
             getReservasForMonthCasa(state.value.yearMonth, state.value.activeCasa)
         }
+
     }
 
     suspend fun updateReservas() {
@@ -98,22 +104,22 @@ class ReservasMainVM @Inject constructor(
         for ((i, week) in state.value.weeks.withIndex()) {
             getReservasJobs[i]?.cancelAndJoin()
             val reservasInWeekForCasa: MutableList<ReservaInfo> = mutableListOf()
-            val reservasInRange = reservaUseCases.getReservasInRange(week.first(), week.last())
-            getReservasJobs[i] = reservasInRange.cancellable()
-                .onEach { reservas ->
+            getReservasJobs[i] = viewModelScope.launch {
+                reservaUseCases.getReservasInRange(week.first(), week.last()).let{ reservas ->
                     yield()
                     reservasInWeekForCasa.addAll(reservas
                         .filter { r -> casa == null || r.casa == casa }
                         .map { r ->
                             ReservaInfo(
                                 reserva = r,
-                                clienteName = getNameOfCliente(r.clienteId))
+                                clienteName = getNameOfCliente(r.clienteId)
+                            )
                         })
-                    if(state.value.reservasWeeks.count() > i) //para que no crashee si apretas muy rapido
+                    if (state.value.reservasWeeks.count() > i) //para que no crashee si apretas muy rapido
                         _state.value.reservasWeeks[i] = reservasInWeekForCasa
                     throw CancellationException()
                 }
-                .launchIn(viewModelScope)
+            }
         }
         for ((i, _) in state.value.weeks.withIndex()) {
             getReservasJobs[i]?.join()

@@ -16,9 +16,7 @@ class DeleteCliente(
         onFirebaseSuccessListener: () -> Unit,
         onFirebaseFailureListener: (Exception) -> Unit
     ) {
-        if (reservaRepository.getReservasFromCliente(cliente.id).firstOrNull()
-                ?.isNotEmpty() == true
-        ) {
+        if (reservaRepository.getReservasFromCliente(cliente.id).isNotEmpty()) {
             throw IllegalStateException("No se puede eliminar un cliente mientras tenga reservas a su nombre!")
         }
         clienteRepository.deleteCliente(cliente)

@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 class GetGastosInRange(private val gastoRepository: GastoRepository) {
-    operator fun invoke(dateFrom: LocalDate, dateTo: LocalDate): Flow<List<Gasto>> = gastoRepository.getGastosInRange(dateFrom, dateTo)
+    suspend operator fun invoke(dateFrom: LocalDate, dateTo: LocalDate): List<Gasto> = gastoRepository.getGastosInRange(dateFrom, dateTo)
 }

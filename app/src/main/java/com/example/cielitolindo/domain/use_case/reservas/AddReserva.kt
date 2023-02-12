@@ -29,9 +29,9 @@ class AddReserva(
             throw InvalidReservaException("La fecha de egreso debe ser posterior a la fecha de ingreso!")
         }
         reservaRepository.getReservasInRange(reserva.fechaIngreso, reserva.fechaEgreso)
-            .first().forEach {
+            .forEach {
                 if (it.id != reserva.id && it.casa == reserva.casa && !it.fechaIngreso.isEqual(reserva.fechaEgreso) && !it.fechaEgreso.isEqual(reserva.fechaIngreso)) {
-                    throw InvalidReservaException("Casa ocupada en esas fechas!")
+                    throw InvalidReservaException("Casa ocupada en esas fechas! \nOtra Reserva: ${it.clienteId} Casa ${it.casa.stringName} ${it.getRangoDeFechasString("dd/MM/yy")}")
                 }
             }
 

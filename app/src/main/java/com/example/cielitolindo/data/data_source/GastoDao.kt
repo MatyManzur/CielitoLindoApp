@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface GastoDao {
     @Query("SELECT * FROM gasto WHERE fecha >= :dateFrom AND fecha <= :dateTo")
-    fun getGastosInRange(dateFrom: String, dateTo: String): Flow<List<Gasto>>
+    suspend fun getGastosInRange(dateFrom: String, dateTo: String): List<Gasto>
 
     @Query("SELECT * FROM gasto WHERE id = :id")
     suspend fun getGastoById(id: String): Gasto?

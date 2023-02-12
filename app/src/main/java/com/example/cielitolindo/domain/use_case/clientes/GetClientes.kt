@@ -12,10 +12,10 @@ class GetClientes(
     private val clienteRepository: ClienteRepository
 ) {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    operator fun invoke(
+    suspend operator fun invoke(
         clienteOrder: ClienteOrder = ClienteOrder.FechaInscripcion(OrderType.Descending)
-    ): Flow<List<Cliente>> {
-        return clienteRepository.getClientes().map { clientes ->
+    ): List<Cliente> {
+        return clienteRepository.getClientes().let { clientes ->
             when(clienteOrder.orderType) {
                 is OrderType.Ascending -> {
                     when(clienteOrder) {

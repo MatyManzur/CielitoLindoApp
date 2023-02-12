@@ -9,10 +9,10 @@ import java.time.format.DateTimeFormatter
 
 class GastoRepositoryImplementation(private val gastoDao: GastoDao) : GastoRepository {
 
-    override fun getGastosInRange(
+    override suspend fun getGastosInRange(
         dateFrom: LocalDate,
         dateTo: LocalDate
-    ): Flow<List<Gasto>> {
+    ): List<Gasto> {
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         return gastoDao.getGastosInRange(dateFrom.format(formatter), dateTo.format(formatter))
     }
